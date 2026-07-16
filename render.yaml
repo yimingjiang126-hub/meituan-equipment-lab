@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: meituan-equipment-proxy
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python standalone/proxy_server.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: PYTHONUNBUFFERED
+        value: "1"

@@ -1,0 +1,70 @@
+# 全局配置
+api:
+  # AI 内容生成 API（优先 OpenRouter，支持多模型切换）
+  openrouter:
+    base_url: "https://openrouter.ai/api/v1"
+    api_key: "2074755564659879949"  # 用户提供的 Key，测试用
+    model: "qwen/qwen-3-235b-a22b:free"  # 默认模型，可切换
+    fallback_model: "deepseek/deepseek-chat-v3-0324:free"
+  # 备用：直接调用国内模型
+  aliyun:
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    api_key: "2074755564659879949"  # 用户提供的 Key，测试用
+    model: "qwen-max-latest"
+
+platforms:
+  douyin:
+    enabled: true
+    sources:
+      - name: "抖音热点榜"
+        url: "https://www.douyin.com/hot"
+      - name: "抖音挑战榜"
+        url: "https://www.douyin.com/hot"
+    keywords_filter: []  # 只关注包含这些关键词的热点，空=全部
+  xiaohongshu:
+    enabled: true
+    sources:
+      - name: "小红书热搜"
+        url: "https://www.xiaohongshu.com/search_result?keyword="
+    keywords_filter: []
+  ecommerce:
+    enabled: true
+    sources:
+      - name: "美团骑手商城"
+        url: "https://www.meituan.com"  # 占位，实际走内部数据或竞品分析
+    competitor_monitor:
+      - "京东骑手装备"
+      - "饿了么商城"
+      - "拼多多骑手"
+
+output:
+  base_dir: "M:\\营销工作\\每日热点内容输出"
+  formats:
+    - excel   # 内容排期表
+    - word    # 活动策划案
+    - markdown # 速览简报
+  
+schedule:
+  daily_run_time: "09:00"  # 每日自动执行时间
+  timezone: "Asia/Shanghai"
+
+logging:
+  level: INFO
+  file: "M:\\social-media-marketing-auto\\data\\app.log"
+
+# 小红书第三方数据平台趋势 API（新榜/千瓜/蝉妈妈/灰豚）
+xhs_trend_api:
+  # 选择平台：newrank / qiangua / chanmama / huitun / custom
+  platform: "custom"
+  # API 基础地址（根据平台文档填写）
+  base_url: ""
+  # API Key / Access Token
+  api_key: ""
+  # API Secret（部分平台需要）
+  api_secret: ""
+  # 目标账号 ID（小红书用户主页 URL 中的 ID）
+  account_id: "672e12dc000000001c01aef0"
+  # 数据粒度：hourly / daily
+  granularity: "hourly"
+  # 回溯天数
+  lookback_days: 1

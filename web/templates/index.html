@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美团装备研究所 · 内容运营中心</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; background:#f5f5f5; color:#333; font-size:12px; line-height:1.4; overflow:hidden; }
+
+/* ======== 顶部导航 ======== */
+.topbar { height:48px; background:#fff; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between; padding:0 20px; position:fixed; top:0; left:0; right:0; z-index:100; }
+.logo { display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:#222; }
+.logo img { height:28px; }
+.topbar-center { font-size:20px; font-weight:700; position:absolute; left:50%; transform:translateX(-50%); letter-spacing:1px; }
+.topbar-right { display:flex; align-items:center; gap:16px; font-size:12px; color:#666; }
+.topbar-right .avatar { width:28px; height:28px; border-radius:50%; background:#ffe58f; display:flex; align-items:center; justify-content:center; font-size:14px; }
+
+/* ======== 主布局 ======== */
+.main { padding:56px 12px 0; max-width:1440px; margin:0 auto; height:100vh; }
+.main-grid { display:grid; grid-template-columns:2fr 1fr 1fr; grid-template-rows:170px 150px 70px 300px 300px; gap:8px; height:calc(100vh - 56px); }
+
+/* ======== 卡片通用 ======== */
+.card { background:#fff; border-radius:8px; border:1px solid #eee; overflow:hidden; display:flex; flex-direction:column; }
+.card-header { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-bottom:1px solid #eee; min-height:32px; flex-shrink:0; }
+.card-title { font-size:12px; font-weight:700; display:flex; align-items:center; gap:5px; color:#333; }
+.card-more { font-size:11px; color:#999; cursor:pointer; display:flex; align-items:center; gap:2px; }
+.card-body { padding:8px 12px; flex:1; overflow:hidden; }
+.btn { border:none; border-radius:4px; padding:5px 12px; font-size:11px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:opacity 0.2s; }
+.btn:hover { opacity:0.9; }
+.btn-primary { background:#ffc800; color:#333; font-weight:600; }
+.btn-secondary { background:#f5f5f5; color:#666; border:1px solid #ddd; }
+.tag { display:inline-flex; align-items:center; padding:1px 6px; border-radius:3px; font-size:10px; margin-left:4px; font-weight:500; }
+.tag-success { background:#f6ffed; color:#52c41a; border:1px solid #b7eb8f; }
+.tag-info { background:#e6f7ff; color:#1890ff; border:1px solid #91d5ff; }
+.tag-warn { background:#fffbe6; color:#faad14; border:1px solid #ffe58f; }
+.tag-danger { background:#fff1f0; color:#ff4d4f; border:1px solid #ffa39e; }
+
+/* ======== 账号概览 —— 小红书账号数据 ======== */
+.hot-card .card-body { padding:6px 10px; display:flex; flex-direction:column; gap:4px; }
+
+/* 小红书账号信息 */
+.xhs-profile { display:flex; flex-direction:column; gap:3px; }
+.xhs-avatar-wrap { display:flex; align-items:flex-start; gap:8px; }
+.xhs-avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #ff2442; background:#fff; flex-shrink:0; }
+.xhs-info { flex:1; min-width:0; }
+.xhs-name { font-size:13px; font-weight:700; color:#222; line-height:1.2; }
+.xhs-id { font-size:10px; color:#999; }
+.xhs-follow-btn { background:#ff2442; color:#fff; border:none; border-radius:12px; padding:2px 8px; font-size:10px; font-weight:600; cursor:pointer; transition:opacity 0.2s; flex-shrink:0; align-self:flex-start; }
+.xhs-follow-btn:hover { opacity:0.9; }
+.xhs-bio { font-size:10px; color:#666; line-height:1.3; }
+.xhs-tags { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:4px; }
+.xhs-tag { background:#f5f5f5; color:#666; padding:2px 8px; border-radius:10px; font-size:10px; }
+.xhs-stats { display:flex; gap:0; border-top:1px solid #f0f0f0; padding-top:3px; }
+.xhs-stat { flex:1; text-align:center; position:relative; }
+.xhs-stat:not(:last-child)::after { content:''; position:absolute; right:0; top:2px; bottom:2px; width:1px; background:#eee; }
+.xhs-stat-num { font-size:13px; font-weight:700; color:#222; line-height:1; }
+.xhs-stat-label { font-size:10px; color:#999; margin-top:2px; }
+
+/* 热度趋势图 */
+.hot-trend { display:flex; flex-direction:column; flex:1; min-height:0; position:relative; }
+.hot-trend .trend-label { font-size:11px; color:#999; margin-bottom:2px; flex-shrink:0; }
+.hot-trend .trend-chart { flex:1; min-height:0; }
+.hot-trend .peak-value { position:absolute; top:16px; right:8px; font-size:11px; font-weight:bold; color:#ff7a45; z-index:10; background:rgba(255,255,255,0.8); padding:2px 6px; border-radius:4px; }
+
+/* 趋势数据指标表格 */
+.trend-metrics { display:flex; gap:0; border:1px solid #f0f0f0; border-radius:4px; margin-top:4px; flex-shrink:0; overflow:hidden; }
+.trend-metrics .metric-item { flex:1; text-align:center; padding:4px 0; position:relative; background:#fafafa; }
+.trend-metrics .metric-item:not(:last-child)::after { content:''; position:absolute; right:0; top:4px; bottom:4px; width:1px; background:#eee; }
+.trend-metrics .metric-value { font-size:13px; font-weight:700; line-height:1.2; }
+.trend-metrics .metric-label { font-size:9px; color:#999; margin-top:1px; }
+
+/* 底部操作 */
+.hot-actions { display:flex; gap:6px; flex-shrink:0; margin-top:4px; }
+.hot-actions .btn { padding:3px 6px; font-size:10px; }
+.hot-actions .btn-primary { padding:4px 8px; font-size:11px; }
+
+/* ======== Top10 ======== */
+.rank-item { display:flex; align-items:center; gap:5px; padding:3px 0; border-bottom:1px solid #f5f5f5; font-size:11px; transition:background 0.15s; }
+.rank-item:hover { background:#f0f5ff; border-radius:4px; }
+.rank-item:last-child { border-bottom:none; }
+.rank-num { width:18px; height:18px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
+.rank-num.hot { background:#ff4d4f; color:#fff; }
+.rank-num.warm { background:#ff7a45; color:#fff; }
+.rank-num.normal { background:#f5f5f5; color:#999; }
+.rank-title { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#333; }
+.rank-heat { font-size:10px; color:#ff4d4f; font-weight:600; flex-shrink:0; }
+
+/* ======== 我的待办 / 工作集 ======== */
+.todo-item { display:flex; align-items:center; gap:6px; padding:4px 0; font-size:11px; border-bottom:1px solid #f5f5f5; transition:opacity 0.2s; }
+.todo-item:last-child { border-bottom:none; }
+.todo-item.completed { opacity:0.55; }
+.todo-item.completed .todo-text { text-decoration:line-through; color:#999; }
+.todo-check { width:14px; height:14px; border:1.5px solid #ccc; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; flex-shrink:0; color:transparent; transition:all 0.15s; }
+.todo-check:hover { border-color:#52c41a; }
+.todo-check.checked { background:#52c41a; border-color:#52c41a; color:#fff; }
+.todo-text { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#333; }
+
+.workset-stats { display:flex; gap:8px; margin-top:6px; }
+.workset-stat { text-align:center; flex:1; }
+.workset-stat-val { font-size:20px; font-weight:700; color:#222; line-height:1; }
+.workset-stat-label { font-size:11px; color:#999; }
+.workset-current { margin-top:6px; padding:6px; background:#f8f9fa; border-radius:6px; font-size:11px; }
+.workset-current-title { font-weight:600; margin-bottom:3px; font-size:12px; }
+.workset-current-meta { font-size:10px; color:#999; display:flex; justify-content:space-between; align-items:center; }
+
+/* ======== 相关话题推荐 ======== */
+.topic-list { list-style:none; padding:0; margin:0; }
+.topic-item { display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid #f5f5f5; cursor:pointer; font-size:11px; line-height:1.3; }
+.topic-item:last-child { border-bottom:none; }
+.topic-rank { width:16px; height:16px; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; background:#f5f5f5; color:#999; flex-shrink:0; }
+.topic-rank.hot { background:#ff4d4f; color:#fff; }
+.topic-title { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#333; font-weight:500; }
+.topic-tag-small { font-size:9px; color:#722ed1; background:#f9f0ff; padding:1px 4px; border-radius:3px; flex-shrink:0; }
+.topic-heat { font-size:10px; color:#ff4d4f; font-weight:600; flex-shrink:0; min-width:32px; text-align:right; }
+
+/* ======== 物料制作 ======== */
+.material-form-grid { display:flex; flex-direction:column; gap:3px; }
+.material-form-row { display:flex; gap:5px; }
+.material-form-group { display:flex; flex-direction:column; gap:1px; flex:1; }
+.material-form-group label { font-size:10px; color:#999; font-weight:500; }
+.material-form-group input, .material-form-group select { width:100%; box-sizing:border-box; padding:3px 6px; border:1px solid #eee; border-radius:4px; font-size:11px; outline:none; color:#333; background:#fff; height:24px; }
+.material-form-group input:focus, .material-form-group select:focus { border-color:#eb2f96; }
+.material-upload-area { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; width:40px; height:40px; border:1.5px dashed #ddd; border-radius:6px; cursor:pointer; transition:border-color 0.15s; flex-shrink:0; }
+.material-upload-area:hover { border-color:#eb2f96; }
+.material-upload-thumbs { display:flex; gap:4px; flex-wrap:wrap; }
+.material-thumb { position:relative; width:40px; height:40px; border-radius:6px; overflow:hidden; border:1px solid #eee; flex-shrink:0; }
+.material-thumb img { width:100%; height:100%; object-fit:cover; }
+.material-thumb-remove { position:absolute; top:0; right:0; width:14px; height:14px; background:rgba(0,0,0,0.5); color:#fff; border-radius:0 0 0 6px; display:flex; align-items:center; justify-content:center; font-size:9px; cursor:pointer; line-height:1; }
+.material-preview-box { flex:1; min-height:0; background:#f8f9fa; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
+.material-preview-placeholder { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.material-loading { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.material-loading .spinner { width:20px; height:20px; border:2px solid #f3f3f3; border-top:2px solid #eb2f96; border-radius:50%; animation:spin 1s linear infinite; }
+.material-download-btn { position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.6); color:#fff; padding:4px 10px; border-radius:4px; font-size:11px; text-decoration:none; cursor:pointer; transition:background 0.15s; z-index:10; border:none; outline:none; }
+.material-download-btn:hover { background:rgba(0,0,0,0.85); }
+.mat-desc-input { width:100%; box-sizing:border-box; min-height:50px; max-height:100px; padding:5px 8px; border:1px solid #eee; border-radius:4px; font-size:11px; line-height:1.5; resize:vertical; outline:none; color:#333; font-family:inherit; }
+.mat-desc-input:focus { border-color:#eb2f96; }
+
+/* ======== 内容生成（新布局：紧凑模式） ======== */
+.content-gen-wrapper { display:flex; flex-direction:column; height:100%; gap:6px; }
+.content-gen-top { display:flex; gap:8px; flex:1; min-height:0; }
+.content-gen-left { display:flex; flex-direction:column; min-height:0; flex:0 0 40%; }
+.content-gen-right { display:flex; flex-direction:column; min-height:0; flex:1; gap:6px; }
+.title-list { list-style:none; padding:0; margin:0; overflow-y:auto; min-height:0; }
+.title-item { padding:3px 5px; font-size:11px; border-bottom:1px solid #f5f5f5; display:flex; gap:4px; align-items:center; line-height:1.3; cursor:pointer; transition:background 0.15s; border-radius:4px; }
+.title-item:hover { background:#f8f8ff; }
+.title-item.selected { background:#f0e6ff; border:1px solid #d3adf7; }
+.title-item:last-child { border-bottom:none; }
+.title-num { width:16px; height:16px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; background:#f5f5f5; color:#999; flex-shrink:0; }
+.title-num.hot { background:#ff4d4f; color:#fff; }
+.title-text { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.title-tag-inline { font-size:9px; color:#722ed1; background:#f9f0ff; padding:1px 4px; border-radius:3px; flex-shrink:0; }
+.analysis-box { background:#f8f9fa; border-radius:4px; padding:5px 7px; font-size:11px; line-height:1.3; }
+.analysis-box .analysis-title { font-size:10px; font-weight:700; color:#666; margin-bottom:2px; display:flex; align-items:center; gap:4px; }
+.analysis-box .analysis-body { color:#333; white-space:pre-wrap; max-height:40px; overflow-y:auto; }
+.full-text-box { background:#fafafa; border:1px solid #eee; border-radius:4px; padding:6px; font-size:11px; line-height:1.5; color:#333; flex:1; overflow-y:auto; white-space:pre-wrap; min-height:0; }
+.content-gen-actions { display:flex; gap:6px; flex-shrink:0; }
+.content-gen-actions .btn { flex:1; justify-content:center; padding:3px 6px; font-size:10px; }
+.content-gen-actions .btn:disabled { opacity:0.5; cursor:not-allowed; }
+.mascot-area { flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding:0; overflow:visible; gap:2px; }
+.mascot-area .mascot-img-wrap { position:relative; display:flex; align-items:flex-end; justify-content:center; width:100%; height:100%; overflow:visible; }
+.mascot-area img { width:auto; height:auto; max-width:100%; max-height:none; object-fit:contain; transform:scale(2.0); transform-origin:bottom center; filter:none; box-shadow:none; }
+.mascot-area .mascot-caption { font-size:11px; color:#999; text-align:center; line-height:1.4; flex-shrink:0; }
+.mascot-area .mascot-caption strong { color:#333; font-weight:600; display:block; margin-bottom:2px; }
+.content-input-label { display:flex; justify-content:space-between; font-size:11px; font-weight:600; color:#666; margin-bottom:2px; flex-shrink:0; }
+.content-input { width:100%; border:1px solid #eee; border-radius:4px; padding:3px 8px; font-size:11px; resize:none; outline:none; color:#333; height:26px; line-height:1.3; }
+
+
+/* ======== 最近生成 ======== */
+.recent-list { list-style:none; }
+.recent-item { display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid #f5f5f5; font-size:11px; }
+.recent-item:last-child { border-bottom:none; }
+.recent-icon { width:24px; height:24px; border-radius:4px; background:#f8f9fa; display:flex; align-items:center; justify-content:center; color:#999; font-size:11px; flex-shrink:0; }
+.recent-info { flex:1; min-width:0; }
+.recent-title { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; color:#333; }
+.recent-meta { font-size:10px; color:#999; }
+.recent-status { font-size:10px; padding:2px 6px; border-radius:3px; flex-shrink:0; font-weight:500; }
+.status-done { background:#f6ffed; color:#52c41a; }
+.status-pending { background:#fffbe6; color:#faad14; }
+
+/* ======== 常用模板快捷 ======== */
+.template-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.template-item { display:flex; align-items:center; gap:6px; padding:4px; background:#fafafa; border-radius:6px; cursor:pointer; border:1px solid #eee; }
+.template-icon { font-size:16px; width:28px; text-align:center; flex-shrink:0; }
+.template-info { min-width:0; }
+.template-name { font-size:11px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#333; }
+.template-desc { font-size:10px; color:#999; }
+
+/* ======== 滚动条美化 ======== */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#ddd; border-radius:2px; }
+@keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<div class="topbar">
+  <div class="logo">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="logo">
+    <span>美团装备研究所</span>
+  </div>
+  <div class="topbar-center">内容运营中心</div>
+  <div class="topbar-right">
+    <div class="avatar"><i class="fas fa-user-astronaut"></i></div>
+    <span>内容运营官</span>
+    <i class="fas fa-chevron-down" style="font-size:10px;"></i>
+    <i class="fas fa-bell" style="color:#999;"></i>
+    <i class="far fa-question-circle" style="color:#999;"></i>
+    <span>帮助中心</span>
+  </div>
+</div>
+
+<!-- 主内容 -->
+<div class="main">
+  <div class="main-grid">
+
+    <!-- 1. 账号概览 —— 小红书账号数据 -->
+    <div class="card hot-card" style="grid-column:1; grid-row:1 / span 2;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-fire" style="color:#ff2442;"></i> 账号概览</div>
+        <div style="font-size:11px;color:#999;">更新时间：<span id="update-time">10:30</span> <i class="fas fa-sync-alt" style="cursor:pointer;margin-left:4px;"></i></div>
+      </div>
+      <div class="card-body">
+        <!-- 小红书账号信息 -->
+        <div class="xhs-profile" id="xhs-profile">
+          <div class="xhs-avatar-wrap">
+            <img src="/static/images/logo.png" alt="头像" class="xhs-avatar" id="xhs-avatar">
+            <div class="xhs-info">
+              <div class="xhs-name" id="xhs-name">美团装备研究所</div>
+              <div class="xhs-id" id="xhs-id">小红书号：9336822841</div>
+              <div class="xhs-tags-row" id="xhs-tags">
+                <span class="xhs-tag">骑手装备</span>
+                <span class="xhs-tag">安全指南</span>
+                <span class="xhs-tag">测评</span>
+                <span class="xhs-tag">装备推荐</span>
+              </div>
+            </div>
+            <button class="xhs-follow-btn">+ 关注</button>
+          </div>
+          <div class="xhs-bio" id="xhs-bio">探索不一样的骑手装备，认准一号官，其他均为假所长哦</div>
+          <div class="xhs-stats" id="xhs-stats">
+            <div class="xhs-stat">
+              <div class="xhs-stat-num" id="xhs-followers">4.6万</div>
+              <div class="xhs-stat-label">粉丝</div>
+            </div>
+            <div class="xhs-stat">
+              <div class="xhs-stat-num" id="xhs-likes">5.4万</div>
+              <div class="xhs-stat-label">获赞与收藏</div>
+            </div>
+            <div class="xhs-stat">
+              <div class="xhs-stat-num" id="xhs-notes">81</div>
+              <div class="xhs-stat-label">笔记</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 热度趋势图 -->
+        <div class="hot-trend">
+          <div class="trend-label">热度趋势（近24小时）</div>
+          <div class="trend-chart" id="trend-chart"></div>
+          <div class="peak-value">7,856</div>
+        </div>
+
+        <!-- 数据指标表格 -->
+        <div class="trend-metrics" id="trend-metrics">
+          <div class="metric-item">
+            <div class="metric-value" style="color:#ff4d4f;">7,856</div>
+            <div class="metric-label">峰值</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" style="color:#1890ff;">5,234</div>
+            <div class="metric-label">均值</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" style="color:#52c41a;">2,100</div>
+            <div class="metric-label">最低</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" style="color:#faad14;">5,400</div>
+            <div class="metric-label">当前</div>
+          </div>
+        </div>
+
+        <!-- 底部操作 -->
+        <div class="hot-actions" style="margin-top:6px;">
+          <button class="btn btn-primary" onclick="generatePack()"><i class="fas fa-wand-magic-sparkles"></i> 一键生成内容包</button>
+          <button class="btn btn-secondary" onclick="showAngles()"><i class="fas fa-lightbulb"></i> 生成话题角度</button>
+          <button class="btn btn-secondary" onclick="riskCheck()"><i class="fas fa-shield-alt"></i> 风险检查</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Top10 热点榜单 -->
+    <div class="card" style="grid-column:2; grid-row:1 / span 2;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-chart-line" style="color:#ff7a45;"></i> Top10 热点榜单</div>
+        <span class="card-more" onclick="showYesterdayData()">昨日数据 <i class="fas fa-chevron-right" style="font-size:10px;"></i></span>
+      </div>
+      <div class="card-body" style="padding:6px 10px;">
+        <ul class="rank-list" id="rank-list">
+          <li class="rank-item" style="justify-content:center;color:#999;font-size:12px;">加载中...</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 3. 我的待办 -->
+    <div class="card" style="grid-column:3; grid-row:1;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-check-square" style="color:#52c41a;"></i> 我的待办</div>
+        <span class="card-more" onclick="showTodoInput()">+ 提交待办</span>
+      </div>
+      <div class="card-body" style="padding:6px 10px; display:flex; flex-direction:column;">
+        <div id="todo-input-area" style="display:none; gap:4px; margin-bottom:6px; flex-direction:column;">
+          <input type="text" id="todo-input-text" placeholder="输入待办事项..." style="padding:4px 8px; border:1px solid #ddd; border-radius:4px; font-size:11px; outline:none;" />
+          <div style="display:flex; gap:4px; justify-content:flex-end;">
+            <button class="btn btn-secondary" style="padding:2px 8px; font-size:10px;" onclick="hideTodoInput()">取消</button>
+            <button class="btn btn-primary" style="padding:2px 8px; font-size:10px;" onclick="submitTodo()">提交</button>
+          </div>
+        </div>
+        <ul class="todo-list" id="todo-list" style="flex:1; overflow-y:auto; min-height:0;">
+          <li class="todo-placeholder" style="text-align:center; color:#999; font-size:11px; padding:16px 0;">暂无待办，点击上方提交待办</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 4. 历史生成记录 —— 展示最近3条生成内容标题 -->
+    <div class="card" style="grid-column:3; grid-row:2;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-history" style="color:#1890ff;"></i> 历史生成记录</div>
+        <span class="card-more" onclick="showWorksetMore()">更多 <i class="fas fa-chevron-right" style="font-size:10px;"></i></span>
+      </div>
+      <div class="card-body" style="padding:6px 10px;">
+        <ul class="recent-list" id="workset-list">
+          <li class="recent-item" style="justify-content:center; color:#999; font-size:11px;">暂无生成记录，生成内容后自动记录</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 6. 物料素材制作 -->
+    <div class="card" style="grid-column:2; grid-row:3 / span 3;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-palette" style="color:#eb2f96;"></i> 物料素材制作</div>
+        <button class="btn btn-primary" style="padding:4px 10px;font-size:11px;" onclick="generateMaterial()"><i class="fas fa-wand-magic-sparkles"></i> 生成素材</button>
+      </div>
+      <div class="card-body" style="padding:8px 10px; display:flex; flex-direction:column; gap:5px;">
+        <!-- 上方：素材信息填写 -->
+        <div class="material-form" style="flex-shrink:0;">
+          <div style="font-size:11px; font-weight:600; color:#999; margin-bottom:3px;">素材信息</div>
+          <div class="material-form-grid">
+            <div class="material-form-row">
+              <div class="material-form-group" style="flex:0 0 55px;">
+                <label>宽度</label>
+                <input type="text" id="mat-width" placeholder="1080" value="1080" />
+              </div>
+              <div class="material-form-group" style="flex:0 0 55px;">
+                <label>高度</label>
+                <input type="text" id="mat-height" placeholder="1920" value="1920" />
+              </div>
+              <div class="material-form-group" style="flex:1;">
+                <label>风格</label>
+                <input type="text" id="mat-style" placeholder="输入风格" value="国漫风" />
+              </div>
+              <div class="material-form-group" style="flex:1;">
+                <label>图片素材 <span style="font-weight:normal; color:#bbb;">(最多5张)</span></label>
+                <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
+                  <!-- Upload trigger -->
+                  <div class="material-upload-area" id="mat-upload-area" onclick="document.getElementById('mat-file').click()">
+                    <i class="fas fa-plus" style="font-size:13px; color:#ccc;"></i>
+                    <span style="font-size:9px; color:#999;">添加</span>
+                    <input type="file" id="mat-file" accept="image/*" multiple style="display:none;" onchange="onMaterialUpload(this)" />
+                  </div>
+                  <!-- Preview thumbnails -->
+                  <div class="material-upload-thumbs" id="mat-upload-thumbs"></div>
+                </div>
+              </div>
+            </div>
+            <div class="material-form-row">
+              <div class="material-form-group" style="flex:1;">
+                <label>主标题</label>
+                <input type="text" id="mat-title" placeholder="输入主标题..." oninput="autoGenDesc()" />
+              </div>
+              <div class="material-form-group" style="flex:1;">
+                <label>副标题</label>
+                <input type="text" id="mat-subtitle" placeholder="输入副标题..." oninput="autoGenDesc()" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 中间：图片生成描述 -->
+        <div class="material-desc-area" style="flex-shrink:0;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:3px;">
+            <span style="font-size:11px; font-weight:600; color:#999;">图片生成描述</span>
+            <span class="card-more" style="font-size:10px; cursor:pointer;" onclick="autoGenDesc()">重新生成</span>
+          </div>
+          <textarea id="mat-desc" class="mat-desc-input" placeholder="填写素材信息后自动生成描述，可手动修改..." oninput="onDescEdit()"></textarea>
+        </div>
+
+        <!-- 下方：生成预览 + 下载 -->
+        <div class="material-preview" style="flex:1; min-height:0; display:flex; flex-direction:column; gap:3px;">
+          <div style="font-size:11px; font-weight:600; color:#999; flex-shrink:0;">生成预览</div>
+          <div class="material-preview-box" id="material-preview-box" style="position:relative;">
+            <div class="material-preview-placeholder" id="mat-placeholder">
+              <i class="fas fa-image" style="font-size:24px; color:#ddd;"></i>
+              <span style="font-size:11px; color:#bbb;">确认描述后点击生成素材</span>
+            </div>
+            <div class="material-loading" id="mat-loading" style="display:none;">
+              <div class="spinner"></div>
+              <span style="font-size:11px;color:#999;">美境AI设计师生成中...</span>
+            </div>
+            <img id="material-result-img" style="display:none; max-width:100%; max-height:100%; object-fit:contain; border-radius:6px; pointer-events:none;" src="" alt="生成结果" />
+            <button id="material-download-btn" class="material-download-btn" onclick="downloadMaterial()" style="display:none; border:none; outline:none;">
+              <i class="fas fa-download"></i> 下载
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 5. 内容生成 —— 占满row3-5，顶部嵌入相关话题横条 -->
+    <div class="card" style="grid-column:1; grid-row:3 / span 3;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-pen-fancy" style="color:#722ed1;"></i> 内容生成</div>
+        <span style="font-size:10px;color:#999;">AI 驱动 · 不聊价格 · 不硬广</span>
+      </div>
+      <div class="card-body" style="padding:6px 10px; display:flex; flex-direction:column; gap:6px;">
+        <!-- 相关话题横条 -->
+        <div style="flex-shrink:0; display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:2px 0; border-bottom:1px solid #f5f5f5; margin-bottom:2px;">
+          <span style="font-size:11px; font-weight:500; color:#722ed1; flex-shrink:0;"><i class="fas fa-hashtag" style="font-size:10px;"></i> 相关话题：</span>
+          <ul class="topic-list" id="topic-list" style="margin:0; padding:0; display:flex; flex-wrap:wrap; gap:6px; align-items:center; list-style:none; flex:1;">
+            <li class="topic-item" style="margin:0; padding:0; flex-shrink:0;"><span class="topic-rank" style="font-size:10px; width:16px; height:16px; line-height:16px;">1</span><span class="topic-title" style="font-size:10px;">加载中...</span></li>
+          </ul>
+          <span class="card-more" onclick="refreshTopics()" id="topic-refresh-btn" style="font-size:10px; flex-shrink:0;"><i class="fas fa-sync-alt" style="font-size:9px;"></i> 换一换</span>
+        </div>
+
+        <!-- 话题方向输入 -->
+        <div style="flex-shrink:0;">
+          <div class="content-input-label"><span>话题方向</span><span style="font-weight:400;color:#999;"><span id="input-count">0</span>/50</span></div>
+          <div style="display:flex; gap:6px;">
+            <textarea class="content-input" id="topic-input" rows="1" placeholder="请输入话题方向，如：夏季骑行防晒装备" oninput="updateInputCount()"></textarea>
+            <button class="btn btn-primary" onclick="aiGenerateTitles()" id="btn-gen-titles" style="flex-shrink:0; align-self:flex-start;"><i class="fas fa-wand-magic-sparkles"></i> 生成标题</button>
+          </div>
+        </div>
+
+        <!-- 左侧标题 + 右侧内容分析/正文 -->
+        <div class="content-gen-top">
+          <div class="content-gen-left">
+            <div class="content-input-label" style="flex-shrink:0;">生成标题 <span style="font-weight:400;color:#999;font-size:10px;">（点击选择）</span></div>
+            <ul class="title-list" id="title-list">
+              <li class="title-item" onclick="selectTitle(this, 0)" data-title="" data-type="">
+                <span class="title-num hot">1</span>
+                <span class="title-text">输入话题后生成标题</span>
+              </li>
+            </ul>
+<div class="mascot-area" id="mascot-area">
+  <div class="mascot-img-wrap" style="flex:1; min-height:0;">
+    <img src="{{ url_for('static', filename='images/mascot.png') }}" alt="美团装备研究所" />
+  </div>
+  <div class="mascot-caption">
+    <strong>AI 内容助手</strong>
+    输入话题方向后生成创意标题
+  </div>
+</div>
+            <div class="content-gen-actions" style="padding-top:4px;">
+              <button class="btn btn-secondary" onclick="aiGenerateBody()" id="btn-gen-body" disabled><i class="fas fa-paragraph"></i> 生成正文</button>
+              <button class="btn btn-primary" onclick="submitReview()" id="btn-submit" disabled><i class="fas fa-paper-plane"></i> 提交审核</button>
+            </div>
+          </div>
+          <div class="content-gen-right" id="content-gen-right">
+            <div class="content-input-label" style="flex-shrink:0;">内容分析</div>
+            <div class="analysis-box" id="analysis-focus">
+              <div class="analysis-title"><i class="fas fa-bullseye" style="color:#ff4d4f;"></i> 关注点</div>
+              <div class="analysis-body">输入话题方向后，AI 将围绕该话题提炼核心看点：读者最感兴趣的痛点、最想要的功能点、最关心的场景对比。例如「骑手的一天」话题，关注点可能集中在：日常装备真实体验、高强度工作下的装备选择、与同行交流的心得等。这些看点将决定正文的切入角度和内容权重。</div>
+            </div>
+            <div class="analysis-box" id="analysis-scene">
+              <div class="analysis-title"><i class="fas fa-eye" style="color:#1890ff;"></i> 第一视角场景</div>
+              <div class="analysis-body">选择标题后，AI 将以「所长」第一人称视角构建真实骑手生活场景：等红灯时暴晒、爬楼梯赶时间、深夜收工的疲惫、被同行搭话的趣味瞬间。场景有画面感、有细节、有情绪共鸣，让读者仿佛身临其境。不是广告话术，而是真实骑手日常。</div>
+            </div>
+            <div class="analysis-box" id="analysis-interaction">
+              <div class="analysis-title"><i class="fas fa-comments" style="color:#52c41a;"></i> 结尾互动</div>
+              <div class="analysis-body">正文生成后，AI 会设计一个自然有趣的评论区互动话题：可以是投票（"你们觉得NFC开锁实用还是噱头？"）、提问（"夏天跑单你们最怕什么？我先说——等红灯暴晒"）、晒物（"评论区交作业：你的箱子用了多久了？还活着吗？"）。互动设计的目标是提升评论率，而非生硬求赞。</div>
+            </div>
+            <div style="flex:1; min-height:0; display:flex; flex-direction:column;">
+              <div class="content-input-label" style="flex-shrink:0;">完整正文</div>
+              <div class="full-text-box" id="full-text-preview" style="font-size:11px; line-height:1.6; color:#555; padding:6px 8px; overflow-y:auto; flex:1;">
+                <div style="font-size:10px; color:#999; margin-bottom:6px; text-align:center;">📌 示例预览（选择标题并生成正文后，此处将显示实际内容）</div>
+                <div style="font-weight:500; color:#333; margin-bottom:6px; font-size:12px;">骑手的一天｜看完沉默了</div>
+                <div>早上六点半出门，我还觉得今天挺凉快的。结果中午爬了六楼送餐，后背全湿透了。等红灯的时候太阳直射，脖子火辣辣的，以前穿棉T恤黏在身上那个难受啊。</div>
+                <div style="margin-top:6px;">说的是真实经历。那次印象挺深——是去年七月最热的一个周五，我在朝阳区跑午高峰。系统连续派了三个六楼的单子，最后一单是老旧小区，没有电梯。我拎着两大袋奶茶往上爬，楼道里又闷又窄，还飘着一股消毒水味。爬到四楼的时候腿已经软了，扶着栏杆喘口气，听见楼上住户在喊"外卖到了吗"，我只能咬牙继续往上冲。</div>
+                <div style="margin-top:6px;">好不容易送到，开门的是个小姑娘，接过奶茶说了声"谢谢叔叔"就关门了。我站在楼道里愣了两秒，低头看看自己，衣服湿得能拧出水，裤脚还沾着泥点。那一下突然觉得挺心酸的，但紧接着系统又弹出新单子，只好转身下楼继续跑。</div>
+                <div style="margin-top:6px;">今天试了新到的速干衣，仿棉面料摸着像普通T恤，但汗湿后背居然不会黏！同样是爬六楼，送完午高峰回家，衣服已经干了，也没啥汗味。最惊喜的是腋下和后背的网眼设计，以前闷出一身汗的感觉明显少了。</div>
+                <div style="margin-top:6px;">下午在国贸附近等红灯，被三个同行问衣服哪买的，我说装备研究所的，他们表情就跟我免费送的一样😂其中一个兄弟还非要摸一下面料，说"这不就是普通T恤吗？"我说你穿一天就知道了。</div>
+                <div style="margin-top:6px;">傍晚收工路过便利店，店员看我衣服没湿透，问我是不是今天单子少。我说单子没少，是衣服换对了。她听完掏出手机记了名字，说给她老公也整一件——她老公也是跑众包的。</div>
+                <div style="margin-top:6px;">凌晨收工的时候算了算，以前一个月光T恤就得洗坏两三件，现在这件速干衣洗了十几次了，版型还在，也没起球。以前跑单一天换两件T恤，今天一件就搞定了。</div>
+                <div style="margin-top:6px; font-weight:500; color:#333;">你们夏天跑单最怕什么？我先说——老旧小区没电梯的六楼。评论区说说你们的崩溃瞬间！</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. 常用模板快捷 -->
+    <div class="card" style="grid-column:3; grid-row:4 / span 2;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-th-large" style="color:#faad14;"></i> 常用模板快捷</div>
+        <span class="card-more">管理</span>
+      </div>
+      <div class="card-body">
+        <div class="template-grid">
+          <div class="template-item" onclick="useTemplate('xiaohongshu')">
+            <div class="template-icon" style="color:#ff2442;"><i class="fas fa-book-open"></i></div>
+            <div class="template-info"><div class="template-name">小红书笔记模板</div><div class="template-desc">种草图文</div></div>
+          </div>
+          <div class="template-item" onclick="useTemplate('koubo')">
+            <div class="template-icon" style="color:#fa8c16;"><i class="fas fa-microphone"></i></div>
+            <div class="template-info"><div class="template-name">口播脚本模板</div><div class="template-desc">短视频脚本</div></div>
+          </div>
+          <div class="template-item" onclick="useTemplate('title')">
+            <div class="template-icon" style="color:#722ed1;"><i class="fas fa-heading"></i></div>
+            <div class="template-info"><div class="template-name">标题钩子模板</div><div class="template-desc">吸睛标题</div></div>
+          </div>
+          <div class="template-item" onclick="useTemplate('poster')">
+            <div class="template-icon" style="color:#1890ff;"><i class="fas fa-image"></i></div>
+            <div class="template-info"><div class="template-name">物料海报模板</div><div class="template-desc">宣传海报</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function updateInputCount() { document.getElementById('input-count').textContent = document.getElementById('topic-input').value.length; }
+function generatePack() { alert('一键生成内容包'); }
+function showAngles() { alert('生成话题角度'); }
+function riskCheck() { alert('风险检查'); }
+
+// ===== 物料素材制作 =====
+var matUploadedFiles = [];
+var matDescEdited = false;
+var MAX_IMAGES = 5;
+
+function renderMaterialThumbs() {
+  var container = document.getElementById('mat-upload-thumbs');
+  if (!container) return;
+  container.innerHTML = '';
+  matUploadedFiles.forEach(function(item, idx) {
+    var div = document.createElement('div');
+    div.className = 'material-thumb';
+    div.innerHTML = '<img src="' + item.dataUrl + '" alt="" /><span class="material-thumb-remove" onclick="removeMaterialThumb(' + idx + ')">✕</span>';
+    container.appendChild(div);
+  });
+  var uploadArea = document.getElementById('mat-upload-area');
+  if (uploadArea) {
+    uploadArea.style.display = matUploadedFiles.length >= MAX_IMAGES ? 'none' : 'flex';
+  }
+}
+
+function onMaterialUpload(input) {
+  if (!input.files || input.files.length === 0) return;
+  var remaining = MAX_IMAGES - matUploadedFiles.length;
+  if (remaining <= 0) { alert('最多上传' + MAX_IMAGES + '张图片'); return; }
+  
+  var filesToAdd = Math.min(input.files.length, remaining);
+  var processed = 0;
+  
+  for (var i = 0; i < filesToAdd; i++) {
+    (function(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        matUploadedFiles.push({ file: file, dataUrl: e.target.result });
+        processed++;
+        if (processed === filesToAdd) {
+          renderMaterialThumbs();
+          autoGenDesc();
+        }
+      };
+      reader.readAsDataURL(file);
+    })(input.files[i]);
+  }
+  input.value = '';
+}
+
+function removeMaterialThumb(index) {
+  if (index >= 0 && index < matUploadedFiles.length) {
+    matUploadedFiles.splice(index, 1);
+    renderMaterialThumbs();
+    autoGenDesc();
+  }
+}
+
+function onDescEdit() {
+  matDescEdited = true;
+}
+
+function autoGenDesc() {
+  matDescEdited = false;
+  var width = document.getElementById('mat-width').value.trim();
+  var height = document.getElementById('mat-height').value.trim();
+  var title = document.getElementById('mat-title').value.trim();
+  var subtitle = document.getElementById('mat-subtitle').value.trim();
+  var style = document.getElementById('mat-style').value.trim();
+  var imageCount = matUploadedFiles.length;
+  
+  if (!title && !subtitle && !style && imageCount === 0) {
+    document.getElementById('mat-desc').value = '';
+    return;
+  }
+  
+  var parts = [];
+  parts.push('生成一张小红书竖版海报');
+  if (style) parts.push('，风格为' + style);
+  if (width && height) parts.push('，尺寸' + width + 'x' + height + 'px');
+  if (title) parts.push('。画面主标题文字为"' + title + '"，需突出醒目排版');
+  if (subtitle) parts.push('，副标题为"' + subtitle + '"，作为辅助说明文字');
+  if (imageCount > 0) {
+    if (imageCount === 1) {
+      parts.push('。参考上传的图片素材进行创作，保持素材主体特征');
+    } else {
+      parts.push('。参考上传的' + imageCount + '张图片素材进行创作，融合各素材主体特征');
+    }
+  }
+  if (style) {
+    if (style.indexOf('国漫') >= 0 || style.indexOf('动漫') >= 0) {
+      parts.push('，采用' + style + '的线条和配色，人物形象生动有张力');
+    } else if (style.indexOf('插画') >= 0) {
+      parts.push('，手绘插画质感，色彩柔和层次丰富');
+    } else if (style.indexOf('写实') >= 0) {
+      parts.push('，写实风格，光影细腻质感真实');
+    } else if (style.indexOf('扁平') >= 0) {
+      parts.push('，扁平化设计，几何构图色彩明快');
+    } else if (style.indexOf('3D') >= 0) {
+      parts.push('，3D渲染质感，立体感强材质逼真');
+    }
+  }
+  parts.push('。整体构图饱满不留白，适合小红书信息流展示，文字清晰可读');
+  
+  document.getElementById('mat-desc').value = parts.join('');
+}
+
+function generateMaterial() {
+  var desc = document.getElementById('mat-desc').value.trim();
+  
+  if (!desc) {
+    autoGenDesc();
+    desc = document.getElementById('mat-desc').value.trim();
+    if (!desc) { alert('请先填写素材信息并生成描述'); return; }
+  }
+  
+  // Reset preview
+  var img = document.getElementById('material-result-img');
+  var btn = document.getElementById('material-download-btn');
+  var placeholder = document.getElementById('mat-placeholder');
+  var loading = document.getElementById('mat-loading');
+  if (img) { img.style.display = 'none'; img.src = ''; }
+  if (btn) btn.style.display = 'none';
+  if (placeholder) placeholder.style.display = 'none';
+  if (loading) loading.style.display = 'flex';
+  
+  var formData = new FormData();
+  formData.append('prompt', desc);
+  matUploadedFiles.forEach(function(item) {
+    formData.append('image', item.file);
+  });
+  
+  fetch('/api/generate-material', { method: 'POST', body: formData })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) {
+        if (loading) loading.style.display = 'none';
+        if (placeholder) {
+          placeholder.innerHTML = '<i class="fas fa-exclamation-circle" style="font-size:24px;color:#ff4d4f;"></i><span style="font-size:11px;color:#999;">' + escapeHtml(d.error) + '</span>';
+          placeholder.style.display = 'flex';
+        }
+        return;
+      }
+      if (d.task_id) {
+        pollMaterialStatus(d.task_id);
+      }
+    })
+    .catch(function(e) {
+      console.error('Material generation failed', e);
+      if (loading) loading.style.display = 'none';
+      if (placeholder) {
+        placeholder.innerHTML = '<i class="fas fa-image" style="font-size:24px;color:#ddd;"></i><span style="font-size:11px;color:#bbb;">生成失败，请重试</span>';
+        placeholder.style.display = 'flex';
+      }
+    });
+}
+
+function pollMaterialStatus(taskId) {
+  var pollCount = 0;
+  var maxPoll = 300; // 最多轮询300次（约10分钟）
+  var loading = document.getElementById('mat-loading');
+  var loadingText = loading ? loading.querySelector('span') : null;
+  
+  function doPoll() {
+    pollCount++;
+    if (pollCount > maxPoll) {
+      if (loading) loading.style.display = 'none';
+      alert('生成超时，请前往 https://aidesign.meituan.com/ 查看');
+      return;
+    }
+    
+    // 更新加载提示，显示已等待时间
+    var elapsed = Math.round(pollCount * 2);
+    if (loadingText) {
+      loadingText.textContent = '美境AI设计师生成中... 已等待 ' + elapsed + ' 秒';
+    }
+    
+    fetch('/api/generate-material/status/' + taskId)
+      .then(function(r) { return r.json(); })
+      .then(function(status) {
+        if (status.status === 'done' && status.url) {
+          if (loading) loading.style.display = 'none';
+          var img = document.getElementById('material-result-img');
+          var btn = document.getElementById('material-download-btn');
+          if (img) { img.src = status.url; img.style.display = 'block'; }
+          if (btn) { btn.setAttribute('data-url', status.url); btn.style.display = 'inline-flex'; }
+        } else if (status.status === 'failed') {
+          if (loading) loading.style.display = 'none';
+          var placeholder = document.getElementById('mat-placeholder');
+          if (placeholder) {
+            placeholder.innerHTML = '<i class="fas fa-exclamation-circle" style="font-size:24px;color:#ff4d4f;"></i><span style="font-size:11px;color:#999;">' + escapeHtml(status.error || '生成失败') + '</span>';
+            placeholder.style.display = 'flex';
+          }
+        } else {
+          // 仍在生成中，继续轮询
+          setTimeout(doPoll, 2000);
+        }
+      })
+      .catch(function(e) {
+        console.error('Poll failed', e);
+        setTimeout(doPoll, 2000);
+      });
+  }
+  
+  doPoll();
+}
+
+function downloadMaterial() {
+  var url = document.getElementById('material-download-btn').getAttribute('data-url');
+  console.log('Download clicked, URL:', url);
+  if (!url) { alert('图片地址为空'); return; }
+  
+  // Try modern File System Access API to let user choose save location
+  if (window.showSaveFilePicker) {
+    console.log('Using showSaveFilePicker API');
+    fetch(url)
+      .then(function(r) { return r.blob(); })
+      .then(async function(blob) {
+        try {
+          var ext = url.split('.').pop().split('?')[0] || 'png';
+          var handle = await window.showSaveFilePicker({
+            suggestedName: 'material.' + ext,
+            types: [{ accept: { 'image/*': ['.' + ext] } }]
+          });
+          var writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          console.log('Save dialog completed');
+        } catch (err) {
+          console.log('Save dialog error:', err.name, err.message);
+          if (err.name !== 'AbortError') {
+            console.error('Save failed', err);
+            fallbackDownload(url);
+          }
+        }
+      })
+      .catch(function(e) {
+        console.error('Fetch failed', e);
+        fallbackDownload(url);
+      });
+  } else {
+    console.log('showSaveFilePicker not available, using fallback');
+    fallbackDownload(url);
+  }
+}
+
+function fallbackDownload(url) {
+  // Fetch image as blob, create object URL, then trigger download
+  // This is more reliable than direct URL because blob URLs are always same-origin
+  fetch(url)
+    .then(function(r) { return r.blob(); })
+    .then(function(blob) {
+      var blobUrl = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = 'material.png';
+      a.style.cssText = 'position:fixed; top:-9999px; left:-9999px; opacity:0;';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() {
+        URL.revokeObjectURL(blobUrl);
+        if (a.parentNode) document.body.removeChild(a);
+      }, 100);
+    })
+    .catch(function(e) {
+      console.error('Download failed', e);
+      window.open(url, '_blank');
+    });
+}
+
+// ===== AI 内容生成 =====
+var currentTopic = '';
+var selectedTitle = null;
+var selectedTitleType = '';
+var selectedTitleIndex = -1;
+
+function updateInputCount() {
+  var el = document.getElementById('topic-input');
+  var count = el ? el.value.length : 0;
+  var countEl = document.getElementById('input-count');
+  if (countEl) countEl.textContent = count;
+}
+
+function clearContentGen() {
+  document.getElementById('topic-input').value = '';
+  updateInputCount();
+  document.getElementById('title-list').innerHTML = '<li class="title-item" onclick="selectTitle(this, 0)" data-title="" data-type=""><span class="title-num hot">1</span><span class="title-text">输入话题后生成标题</span></li>';
+  var mascotArea = document.getElementById('mascot-area');
+  if (mascotArea) mascotArea.style.display = 'flex';
+  document.getElementById('analysis-focus').querySelector('.analysis-body').textContent = '输入话题方向后，AI 将围绕该话题提炼核心看点：读者最感兴趣的痛点、最想要的功能点、最关心的场景对比。例如「骑手的一天」话题，关注点可能集中在：日常装备真实体验、高强度工作下的装备选择、与同行交流的心得等。这些看点将决定正文的切入角度和内容权重。';
+  document.getElementById('analysis-scene').querySelector('.analysis-body').textContent = '选择标题后，AI 将以「所长」第一人称视角构建真实骑手生活场景：等红灯时暴晒、爬楼梯赶时间、深夜收工的疲惫、被同行搭话的趣味瞬间。场景有画面感、有细节、有情绪共鸣，让读者仿佛身临其境。不是广告话术，而是真实骑手日常。';
+  document.getElementById('analysis-interaction').querySelector('.analysis-body').textContent = '正文生成后，AI 会设计一个自然有趣的评论区互动话题：可以是投票（"你们觉得NFC开锁实用还是噱头？"）、提问（"夏天跑单你们最怕什么？我先说——等红灯暴晒"）、晒物（"评论区交作业：你的箱子用了多久了？还活着吗？"）。互动设计的目标是提升评论率，而非生硬求赞。';
+  document.getElementById('full-text-preview').innerHTML = '<div style="font-size:10px; color:#999; margin-bottom:6px; text-align:center;">📌 示例预览（选择标题并生成正文后，此处将显示实际内容）</div><div style="font-weight:500; color:#333; margin-bottom:6px; font-size:12px;">骑手的一天｜看完沉默了</div><div>早上六点半出门，我还觉得今天挺凉快的。结果中午爬了六楼送餐，后背全湿透了。等红灯的时候太阳直射，脖子火辣辣的，以前穿棉T恤黏在身上那个难受啊。</div><div style="margin-top:6px;">说的是真实经历。那次印象挺深——是去年七月最热的一个周五，我在朝阳区跑午高峰。系统连续派了三个六楼的单子，最后一单是老旧小区，没有电梯。我拎着两大袋奶茶往上爬，楼道里又闷又窄，还飘着一股消毒水味。爬到四楼的时候腿已经软了，扶着栏杆喘口气，听见楼上住户在喊"外卖到了吗"，我只能咬牙继续往上冲。</div><div style="margin-top:6px;">好不容易送到，开门的是个小姑娘，接过奶茶说了声"谢谢叔叔"就关门了。我站在楼道里愣了两秒，低头看看自己，衣服湿得能拧出水，裤脚还沾着泥点。那一下突然觉得挺心酸的，但紧接着系统又弹出新单子，只好转身下楼继续跑。</div><div style="margin-top:6px;">今天试了新到的速干衣，仿棉面料摸着像普通T恤，但汗湿后背居然不会黏！同样是爬六楼，送完午高峰回家，衣服已经干了，也没啥汗味。最惊喜的是腋下和后背的网眼设计，以前闷出一身汗的感觉明显少了。</div><div style="margin-top:6px;">下午在国贸附近等红灯，被三个同行问衣服哪买的，我说装备研究所的，他们表情就跟我免费送的一样😂其中一个兄弟还非要摸一下面料，说"这不就是普通T恤吗？"我说你穿一天就知道了。</div><div style="margin-top:6px;">傍晚收工路过便利店，店员看我衣服没湿透，问我是不是今天单子少。我说单子没少，是衣服换对了。她听完掏出手机记了名字，说给她老公也整一件——她老公也是跑众包的。</div><div style="margin-top:6px;">凌晨收工的时候算了算，以前一个月光T恤就得洗坏两三件，现在这件速干衣洗了十几次了，版型还在，也没起球。以前跑单一天换两件T恤，今天一件就搞定了。</div><div style="margin-top:6px; font-weight:500; color:#333;">你们夏天跑单最怕什么？我先说——老旧小区没电梯的六楼。评论区说说你们的崩溃瞬间！</div>';
+  document.getElementById('btn-gen-body').disabled = true;
+  document.getElementById('btn-submit').disabled = true;
+  selectedTitle = null;
+  selectedTitleType = '';
+  selectedTitleIndex = -1;
+}
+
+function aiGenerateTitles() {
+  var topic = document.getElementById('topic-input').value.trim();
+  if (!topic) { alert('请先输入话题方向'); return; }
+  currentTopic = topic;
+  var btn = document.getElementById('btn-gen-titles');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI 生成中...';
+  
+  fetch('/api/ai-generate-titles', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({topic: topic})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> AI 生成标题';
+    if (d.error) { alert(d.error); return; }
+    
+    var list = document.getElementById('title-list');
+    var html = '';
+    d.titles.forEach(function(t, idx){
+      var numClass = idx < 3 ? 'title-num hot' : 'title-num';
+      html += '<li class="title-item" onclick="selectTitle(this, ' + idx + ')" data-title="' + escapeHtml(t.title) + '" data-type="' + escapeHtml(t.type || '') + '">' +
+        '<span class="' + numClass + '">' + t.id + '</span>' +
+        '<span class="title-text">' + escapeHtml(t.title) + '</span>' +
+        '<span class="title-tag-inline">' + escapeHtml(t.type || '') + '</span>' +
+      '</li>';
+    });
+list.innerHTML = html;
+
+// 隐藏装饰图片，给标题列表腾出空间
+var mascotArea = document.getElementById('mascot-area');
+if (mascotArea) mascotArea.style.display = 'none';
+
+// 默认选中第一个
+    if (d.titles.length > 0) {
+      selectTitle(list.children[0], 0);
+    }
+  })
+  .catch(function(e){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> AI 生成标题';
+    alert('生成失败：' + e.message);
+  });
+}
+
+function selectTitle(el, idx) {
+  var items = document.querySelectorAll('#title-list .title-item');
+  items.forEach(function(item){ item.classList.remove('selected'); });
+  el.classList.add('selected');
+  selectedTitle = el.getAttribute('data-title');
+  selectedTitleType = el.getAttribute('data-type') || '';
+  selectedTitleIndex = idx;
+  document.getElementById('btn-gen-body').disabled = false;
+  document.getElementById('btn-submit').disabled = true;
+}
+
+function aiGenerateBody() {
+  if (!selectedTitle) { alert('请先选择标题'); return; }
+  var btn = document.getElementById('btn-gen-body');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
+  
+  document.getElementById('analysis-focus').querySelector('.analysis-body').textContent = 'AI 正在分析内容关注点…';
+  document.getElementById('analysis-scene').querySelector('.analysis-body').textContent = 'AI 正在构建第一视角场景…';
+  document.getElementById('analysis-interaction').querySelector('.analysis-body').textContent = 'AI 正在设计结尾互动…';
+  document.getElementById('full-text-preview').textContent = 'AI 正在创作完整正文，请稍候…';
+  
+  fetch('/api/ai-generate-body', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({title: selectedTitle, topic: currentTopic, type: selectedTitleType})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paragraph"></i> 生成正文';
+    if (d.error) { alert(d.error); return; }
+    
+    var body = d.body;
+    // 内容分析区域
+    document.getElementById('analysis-focus').querySelector('.analysis-body').textContent = body.focus || '（未生成）';
+    document.getElementById('analysis-scene').querySelector('.analysis-body').textContent = body.scene || '（未生成）';
+    document.getElementById('analysis-interaction').querySelector('.analysis-body').textContent = body.interaction || '（未生成）';
+    
+    // 完整正文
+    document.getElementById('full-text-preview').textContent = body.full_text || '（未生成完整正文）';
+    
+    // 记录到历史生成记录
+    var now = new Date();
+    var timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    worksetRecords.unshift({
+      title: selectedTitle,
+      time: timeStr,
+      date: now.toLocaleDateString('zh-CN', {month:'numeric', day:'numeric'})
+    });
+    if (worksetRecords.length > 10) worksetRecords.pop();
+    renderWorkset();
+    saveWorkset();
+    
+    document.getElementById('btn-submit').disabled = false;
+  })
+  .catch(function(e){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paragraph"></i> 生成正文';
+    alert('生成失败：' + e.message);
+  });
+}
+
+// 工作集记录（最多10条）
+var worksetRecords = [];
+
+function saveWorkset() {
+  localStorage.setItem('meituan_workset', JSON.stringify(worksetRecords));
+}
+function loadWorkset() {
+  var saved = localStorage.getItem('meituan_workset');
+  if (saved) {
+    try { worksetRecords = JSON.parse(saved); } catch(e) { worksetRecords = []; }
+    renderWorkset();
+  }
+}
+
+function renderWorkset() {
+  var list = document.getElementById('workset-list');
+  if (!list) return;
+  if (worksetRecords.length === 0) {
+    list.innerHTML = '<li class="recent-item" style="justify-content:center; color:#999; font-size:11px;">暂无生成记录，生成内容后自动记录</li>';
+    return;
+  }
+  var html = '';
+  var display = worksetRecords.slice(0, 3);
+  display.forEach(function(rec) {
+    html += '<li class="recent-item">' +
+      '<div class="recent-icon" style="color:#52c41a;"><i class="fas fa-check-circle"></i></div>' +
+      '<div class="recent-info"><div class="recent-title">' + escapeHtml(rec.title) + '</div><div class="recent-meta">' + rec.time + '</div></div>' +
+      '<span class="recent-status" style="background:#f6ffed; color:#52c41a;">已生成</span>' +
+    '</li>';
+  });
+  list.innerHTML = html;
+}
+
+function submitReview() {
+  var a = document.createElement('a');
+  a.href = 'https://fxgl365.com/account/operate/audit-content';
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.style.cssText = 'position:fixed; top:-9999px; left:-9999px; opacity:0;';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function showWorksetMore() {
+  if (worksetRecords.length === 0) {
+    alert('暂无生成记录');
+    return;
+  }
+  var html = '<div style="font-size:13px; line-height:1.8; padding:10px 0;">';
+  html += '<div style="font-weight:700; margin-bottom:8px; font-size:14px;">📂 历史生成记录（近10条）</div>';
+  worksetRecords.forEach(function(rec, idx) {
+    html += '<div style="display:flex; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid #f0f0f0;">';
+    html += '<span style="width:18px; text-align:center; font-weight:700; color:' + (idx < 3 ? '#52c41a' : '#999') + '">' + (idx + 1) + '</span>';
+    html += '<span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(rec.title) + '</span>';
+    html += '<span style="color:#999; font-size:11px; flex-shrink:0;">' + rec.time + '</span>';
+    html += '<span style="font-size:10px; padding:1px 5px; border-radius:3px; color:#52c41a; background:#f6ffed;">已生成</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; display:flex; align-items:center; justify-content:center;';
+  modal.innerHTML = '<div style="background:#fff; border-radius:8px; padding:16px; width:460px; max-width:90%; max-height:80%; overflow-y:auto; box-shadow:0 4px 20px rgba(0,0,0,0.2);">' + html + '<div style="text-align:center; margin-top:12px;"><button onclick="this.closest(\'.card-modal\').parentElement.remove()" style="border:none; background:#f5f5f5; padding:6px 20px; border-radius:4px; cursor:pointer; font-size:12px;">关闭</button></div></div>';
+  modal.className = 'card-modal';
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+  document.body.appendChild(modal);
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  var div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+function useTemplate(name) { alert('使用模板: ' + name); }
+
+function initTrendChart() {
+  const el = document.getElementById('trend-chart');
+  if (!el || typeof echarts === 'undefined') return;
+  const chart = echarts.init(el);
+  
+  // 默认占位数据 —— 每2小时一个点，24小时完整覆盖
+  var defaultHours = ['00:00','02:00','04:00','06:00','08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00'];
+  var defaultData = [3200, 2800, 2100, 3800, 5200, 6100, 5800, 6500, 7200, 6800, 7856, 5400];
+  var hours = defaultHours.slice();
+  var data = defaultData.slice();
+  var peak = 7856;
+  
+  function renderChart() {
+    chart.setOption({
+      grid: { left:48, right:14, top:20, bottom:28 },
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(255,255,255,0.95)',
+        borderColor: '#eee',
+        borderWidth: 1,
+        textStyle: { color: '#333', fontSize: 11 },
+        formatter: function(params) {
+          var p = params[0];
+          return '<div style="font-weight:700;color:#333">' + p.name + '</div><div style="color:#ffc800;font-weight:600">热度: ' + p.value.toLocaleString() + '</div>';
+        }
+      },
+      xAxis: {
+        type: 'category',
+        data: hours,
+        boundaryGap: false,
+        axisLine: { lineStyle: { color: '#eee' } },
+        axisLabel: { color: '#999', fontSize: 9, interval: 'auto', rotate: 0 },
+        axisTick: { show: true, alignWithLabel: true, lineStyle: { color: '#eee' } },
+        splitLine: { show: true, lineStyle: { color: '#f5f5f5', type: 'dashed' } }
+      },
+      yAxis: {
+        type: 'value',
+        min: 0,
+        max: Math.max(16000, peak + 2000),
+        interval: 4000,
+        show: true,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: '#999', fontSize: 10, formatter: function(v) { return v >= 1000 ? (v / 1000) + 'k' : v; } },
+        splitLine: { lineStyle: { color: '#f0f0f0' } }
+      },
+      series: [{
+        data: data,
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        showSymbol: true,
+        itemStyle: { color: '#ffc800', borderColor: '#fff', borderWidth: 2 },
+        lineStyle: { color: '#ffc800', width: 2 },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(255,200,0,0.3)' },
+            { offset: 1, color: 'rgba(255,200,0,0.05)' }
+          ])
+        },
+        markPoint: {
+          data: [{ type: 'max', name: '峰值', label: { color: '#fff', fontSize: 10, formatter: '{c}' }, itemStyle: { color: '#ff7a45' } }]
+        }
+      }]
+    });
+    setTimeout(function(){ chart.resize(); }, 200);
+  }
+  
+  // 先渲染占位数据，避免空白
+  renderChart();
+  
+  // 从 API 获取真实趋势数据（仅用于更新峰值，保留默认的12点固定时间数据）
+  fetch('/api/xhs-trend')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || d.error || !d.values || d.values.length === 0) return;
+      // 使用 API 数据更新峰值和指标，但保留固定时间标签
+      var apiPeak = d.peak || Math.max.apply(Math, d.values);
+      peak = apiPeak > peak ? apiPeak : peak;
+      // 更新峰值显示
+      var peakEl = document.querySelector('.peak-value');
+      if (peakEl) peakEl.textContent = peak.toLocaleString();
+      // 更新指标表格
+      var apiValues = d.values;
+      var avg = Math.round(apiValues.reduce(function(a,b){return a+b;},0) / apiValues.length);
+      var min = Math.min.apply(Math, apiValues);
+      var cur = apiValues[apiValues.length-1];
+      var metrics = document.getElementById('trend-metrics');
+      if (metrics) {
+        metrics.children[0].querySelector('.metric-value').textContent = peak.toLocaleString();
+        metrics.children[1].querySelector('.metric-value').textContent = avg.toLocaleString();
+        metrics.children[2].querySelector('.metric-value').textContent = min.toLocaleString();
+        metrics.children[3].querySelector('.metric-value').textContent = cur.toLocaleString();
+      }
+      renderChart();
+    })
+    .catch(function(e){ console.error('Trend data load failed', e); });
+}
+initTrendChart();
+
+// 加载小红书账号数据
+function loadXhsProfile() {
+  fetch('/api/xhs-profile')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || d.error) return;
+      var avatar = document.getElementById('xhs-avatar');
+      if (avatar) avatar.src = (d.avatar && d.avatar !== 'https://example.com\\') ? d.avatar : '/static/images/logo.png';
+      var nameEl = document.getElementById('xhs-name');
+      if (nameEl && d.nickname) nameEl.textContent = d.nickname;
+      var idEl = document.getElementById('xhs-id');
+      if (idEl && d.user_id) idEl.textContent = '小红书号：' + d.user_id;
+      var bioEl = document.getElementById('xhs-bio');
+      if (bioEl && d.bio) bioEl.textContent = d.bio;
+      var tagsEl = document.getElementById('xhs-tags');
+      if (tagsEl && d.tags && d.tags.length) {
+        tagsEl.innerHTML = d.tags.map(function(t){ return '<span class="xhs-tag">' + t + '</span>'; }).join('');
+      }
+      var followersEl = document.getElementById('xhs-followers');
+      if (followersEl && d.followers) followersEl.textContent = d.followers;
+      var likesEl = document.getElementById('xhs-likes');
+      if (likesEl && d.likes_collects) likesEl.textContent = d.likes_collects;
+      var notesEl = document.getElementById('xhs-notes');
+      if (notesEl && d.notes) notesEl.textContent = d.notes;
+      var updatedEl = document.getElementById('xhs-updated');
+      if (updatedEl && d.last_updated) updatedEl.textContent = '更新时间：' + d.last_updated;
+      if (updatedEl && d.next_update) updatedEl.textContent += '  ·  下次更新：' + d.next_update;
+    })
+    .catch(function(e){ console.error('XHS profile load failed', e); });
+}
+loadXhsProfile();
+
+// 加载小红书热点榜单（Top10：热梗/热点/BGM）
+function loadHotRank() {
+  var listEl = document.getElementById('rank-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<li class="rank-item" style="justify-content:center;color:#999;font-size:12px;">加载中...</li>';
+  
+  fetch('/api/xhs-rank')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.items || d.items.length === 0) {
+        listEl.innerHTML = '<li class="rank-item" style="justify-content:center;color:#999;font-size:12px;">暂无数据</li>';
+        return;
+      }
+      var html = '';
+      d.items.forEach(function(item){
+        var rankClass = item.rank <= 3 ? 'rank-num hot' : (item.rank <= 5 ? 'rank-num warm' : 'rank-num normal');
+        var tagClass = item.tag === '热梗' ? 'tag tag-danger' : (item.tag === 'BGM' ? 'tag tag-warn' : 'tag tag-success');
+        html += '<li class="rank-item" style="cursor:pointer;" data-url="' + (item.url || '') + '" onclick="jumpToXhs(this)">' +
+          '<span class="' + rankClass + '">' + item.rank + '</span>' +
+          '<span class="rank-title">' + (item.title || '') + '</span>' +
+          '<span class="rank-heat">' + (item.heat || '') + '</span>' +
+          '<span class="' + tagClass + '">' + (item.tag || '') + '</span>' +
+        '</li>';
+      });
+      listEl.innerHTML = html;
+    })
+    .catch(function(e){ console.error('Hot rank load failed', e); listEl.innerHTML = '<li class="rank-item" style="justify-content:center;color:#999;font-size:12px;">加载失败</li>'; });
+}
+loadHotRank();
+
+// 点击跳转小红书搜索
+function jumpToXhs(el) {
+  var url = el.getAttribute('data-url');
+  if (url) {
+    window.open(url, '_blank');
+  }
+}
+
+// 加载小红书每日话题推荐
+function loadTopics() {
+  var listEl = document.getElementById('topic-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<li class="topic-item"><span class="topic-rank">...</span><span class="topic-title">加载中...</span></li>';
+  
+  fetch('/api/xhs-topics')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.topics || d.topics.length === 0) {
+        listEl.innerHTML = '<li class="topic-item"><span class="topic-title" style="color:#999;">暂无推荐话题</span></li>';
+        return;
+      }
+      var html = '';
+      d.topics.forEach(function(t, idx){
+        var rankClass = idx < 3 ? 'topic-rank hot' : 'topic-rank';
+        var heatStr = t.heat ? (t.heat >= 10000 ? (t.heat/10000).toFixed(1)+'w' : t.heat.toLocaleString()) : '';
+        html += '<li class="topic-item" title="' + (t.reason || '') + '">' +
+          '<span class="' + rankClass + '">' + t.id + '</span>' +
+          '<span class="topic-title">' + (t.title || '') + '</span>' +
+          '<span class="topic-tag-small">' + (t.category || '') + '</span>' +
+          '<span class="topic-heat">' + heatStr + '</span>' +
+        '</li>';
+      });
+      listEl.innerHTML = html;
+      var updatedEl = document.getElementById('topic-updated');
+      if (updatedEl && d.last_updated) updatedEl.textContent = '更新时间：' + d.last_updated;
+    })
+    .catch(function(e){ console.error('Topics load failed', e); listEl.innerHTML = '<li class="topic-item"><span class="topic-title" style="color:#999;">加载失败</span></li>'; });
+}
+loadTopics();
+loadTodos();
+loadWorkset();
+
+// 从localStorage加载待办
+function loadTodos() {
+  var list = document.getElementById('todo-list');
+  if (!list) return;
+  var saved = localStorage.getItem('meituan_todos');
+  if (saved) {
+    var todos = JSON.parse(saved);
+    list.innerHTML = '';
+    todos.forEach(function(t) {
+      var li = document.createElement('li');
+      li.className = 'todo-item' + (t.completed ? ' completed' : '');
+      li.innerHTML = '<span class="todo-check' + (t.completed ? ' checked' : '') + '" onclick="toggleTodo(this)">&#10003;</span><span class="todo-text">' + escapeHtml(t.text) + '</span>';
+      list.appendChild(li);
+    });
+  }
+}
+function saveTodos() {
+  var list = document.getElementById('todo-list');
+  if (!list) return;
+  var items = list.querySelectorAll('.todo-item');
+  var todos = [];
+  items.forEach(function(item) {
+    todos.push({
+      text: item.querySelector('.todo-text').textContent,
+      completed: item.classList.contains('completed')
+    });
+  });
+  localStorage.setItem('meituan_todos', JSON.stringify(todos));
+}
+
+// ============ 我的待办 ============
+function showTodoInput() {
+  var area = document.getElementById('todo-input-area');
+  if (area) { area.style.display = 'flex'; document.getElementById('todo-input-text').focus(); }
+}
+function hideTodoInput() {
+  var area = document.getElementById('todo-input-area');
+  var input = document.getElementById('todo-input-text');
+  if (area) area.style.display = 'none';
+  if (input) input.value = '';
+}
+function submitTodo() {
+  var input = document.getElementById('todo-input-text');
+  var text = input ? input.value.trim() : '';
+  if (!text) return;
+  var list = document.getElementById('todo-list');
+  if (!list) return;
+  // 移除空占位
+  var placeholder = list.querySelector('.todo-placeholder');
+  if (placeholder) placeholder.remove();
+  var li = document.createElement('li');
+  li.className = 'todo-item';
+  li.innerHTML = '<span class="todo-check" onclick="toggleTodo(this)">&#10003;</span><span class="todo-text">' + text + '</span>';
+  list.appendChild(li);
+  input.value = '';
+  hideTodoInput();
+  saveTodos();
+}
+function toggleTodo(el) {
+  var item = el.closest('.todo-item');
+  if (!item) return;
+  item.classList.toggle('completed');
+  el.classList.toggle('checked');
+  saveTodos();
+}
+
+// 刷新话题（手动触发）
+function refreshTopics() {
+  var btn = document.getElementById('topic-refresh-btn');
+  if (btn) btn.style.opacity = '0.5';
+  fetch('/api/xhs-topics/update', {method: 'POST'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      alert(d.msg || '更新已启动');
+      setTimeout(function(){ loadTopics(); if (btn) btn.style.opacity = '1'; }, 8000);
+    })
+    .catch(function(e){ console.error('Topics refresh failed', e); if (btn) btn.style.opacity = '1'; });
+}
+
+// 展示昨日数据
+function showYesterdayData() {
+  var yesterday = [
+    {rank:1, title:'骑手暴雨送餐神操作', heat:'15.2w', tag:'热梗'},
+    {rank:2, title:'新手骑手避坑指南', heat:'11.8w', tag:'热点'},
+    {rank:3, title:'骑手专属防暑三件套', heat:'9.5w', tag:'热点'},
+    {rank:4, title:'"外卖到了"名场面合集', heat:'8.7w', tag:'热梗'},
+    {rank:5, title:'跑单节奏感BGM推荐', heat:'7.9w', tag:'BGM'},
+    {rank:6, title:'骑手手机支架测评', heat:'6.8w', tag:'热点'},
+    {rank:7, title:'夜间跑单照明装备', heat:'5.6w', tag:'热点'},
+    {rank:8, title:'骑手搞笑对话实录', heat:'4.9w', tag:'热梗'},
+    {rank:9, title:'夏日送单清凉神器', heat:'4.2w', tag:'热点'},
+    {rank:10, title:'骑手解压歌单分享', heat:'3.5w', tag:'BGM'}
+  ];
+  var html = '<div style="font-size:13px;line-height:1.8;padding:10px 0;">';
+  html += '<div style="font-weight:700;margin-bottom:8px;font-size:14px;">📊 昨日 Top10 热点榜单</div>';
+  yesterday.forEach(function(item){
+    var tagColor = item.tag==='热梗' ? '#ff4d4f' : (item.tag==='BGM' ? '#faad14' : '#52c41a');
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+    html += '<span style="width:18px;text-align:center;font-weight:700;color:' + (item.rank<=3 ? '#ff4d4f' : '#999') + '">' + item.rank + '</span>';
+    html += '<span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + item.title + '</span>';
+    html += '<span style="color:#999;font-size:11px;">' + item.heat + '</span>';
+    html += '<span style="font-size:10px;padding:1px 5px;border-radius:3px;color:#fff;background:' + tagColor + '">' + item.tag + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  // 使用一个兼容的模态框展示
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = '<div style="background:#fff;border-radius:8px;padding:16px;width:420px;max-width:90%;max-height:80%;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.2);">' + html + '<div style="text-align:center;margin-top:12px;"><button onclick="this.closest(\'.card-modal\').parentElement.remove()" style="border:none;background:#f5f5f5;padding:6px 20px;border-radius:4px;cursor:pointer;font-size:12px;">关闭</button></div></div>';
+  modal.className = 'card-modal';
+  modal.onclick = function(e){ if(e.target === modal) modal.remove(); };
+  document.body.appendChild(modal);
+}
+</script>
+
+</body>
+</html>

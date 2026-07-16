@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美团装备研究所 · 内容运营中心</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; background:#f5f5f5; color:#333; font-size:12px; line-height:1.4; overflow:hidden; }
+
+/* ======== 顶部导航 ======== */
+.topbar { height:48px; background:#fff; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between; padding:0 20px; position:fixed; top:0; left:0; right:0; z-index:100; }
+.logo { display:flex; align-items:center; gap:8px; font-size:16px; font-weight:700; color:#222; }
+.logo img { height:28px; }
+.topbar-center { font-size:20px; font-weight:700; position:absolute; left:50%; transform:translateX(-50%); letter-spacing:1px; }
+.topbar-right { display:flex; align-items:center; gap:16px; font-size:12px; color:#666; }
+.topbar-right .avatar { width:28px; height:28px; border-radius:50%; background:#ffe58f; display:flex; align-items:center; justify-content:center; font-size:14px; }
+
+/* ======== 主布局 ======== */
+.main { padding:56px 12px 0; max-width:1440px; margin:0 auto; height:100vh; }
+.main-grid { display:grid; grid-template-columns:2fr 1fr 1fr; grid-template-rows:190px 140px 70px 280px 280px; gap:8px; height:calc(100vh - 56px); }
+
+/* ======== 卡片通用 ======== */
+.card { background:#fff; border-radius:8px; border:1px solid #eee; overflow:hidden; display:flex; flex-direction:column; }
+.card-header { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-bottom:1px solid #eee; min-height:32px; flex-shrink:0; }
+.card-title { font-size:12px; font-weight:700; display:flex; align-items:center; gap:5px; color:#333; }
+.card-more { font-size:11px; color:#999; cursor:pointer; display:flex; align-items:center; gap:2px; }
+.card-body { padding:8px 12px; flex:1; overflow:hidden; }
+.btn { border:none; border-radius:4px; padding:5px 12px; font-size:11px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:opacity 0.2s; }
+.btn:hover { opacity:0.9; }
+.btn-primary { background:#ffc800; color:#333; font-weight:600; }
+.btn-secondary { background:#f5f5f5; color:#666; border:1px solid #ddd; }
+.tag { display:inline-flex; align-items:center; padding:1px 6px; border-radius:3px; font-size:10px; margin-left:4px; font-weight:500; }
+.tag-success { background:#f6ffed; color:#52c41a; border:1px solid #b7eb8f; }
+.tag-info { background:#e6f7ff; color:#1890ff; border:1px solid #91d5ff; }
+.tag-warn { background:#fffbe6; color:#faad14; border:1px solid #ffe58f; }
+.tag-danger { background:#fff1f0; color:#ff4d4f; border:1px solid #ffa39e; }
+
+/* ======== 账号概览 —— 小红书账号数据 ======== */
+.hot-card .card-body { padding:6px 10px; display:flex; flex-direction:column; gap:3px; }
+
+/* 小红书账号信息 */
+.xhs-profile { display:flex; flex-direction:column; gap:2px; }
+.xhs-avatar-wrap { display:flex; align-items:flex-start; gap:6px; margin-bottom:1px; }
+.xhs-avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #ff2442; background:#fff; flex-shrink:0; }
+.xhs-info { flex:1; min-width:0; }
+.xhs-name { font-size:13px; font-weight:700; color:#222; line-height:1.2; }
+.xhs-id { font-size:10px; color:#999; }
+.xhs-follow-btn { background:#ff2442; color:#fff; border:none; border-radius:12px; padding:2px 8px; font-size:10px; font-weight:600; cursor:pointer; transition:opacity 0.2s; flex-shrink:0; align-self:flex-start; }
+.xhs-follow-btn:hover { opacity:0.9; }
+.xhs-bio { font-size:10px; color:#666; line-height:1.3; margin-bottom:1px; }
+.xhs-tags { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:4px; }
+.xhs-tag { background:#f5f5f5; color:#666; padding:2px 8px; border-radius:10px; font-size:10px; }
+.xhs-stats { display:flex; gap:0; border-top:1px solid #f0f0f0; padding-top:2px; margin-bottom:1px; }
+.xhs-stat { flex:1; text-align:center; position:relative; }
+.xhs-stat:not(:last-child)::after { content:''; position:absolute; right:0; top:2px; bottom:2px; width:1px; background:#eee; }
+.xhs-stat-num { font-size:13px; font-weight:700; color:#222; line-height:1; }
+.xhs-stat-label { font-size:10px; color:#999; margin-top:2px; }
+
+/* 热度趋势图 */
+.hot-trend { display:flex; flex-direction:column; flex:1; min-height:0; position:relative; }
+.hot-trend .trend-label { font-size:11px; color:#999; margin-bottom:1px; flex-shrink:0; }
+.hot-trend .trend-chart { flex:1; min-height:0; }
+.hot-trend .peak-value { position:absolute; top:16px; right:8px; font-size:11px; font-weight:bold; color:#ff7a45; z-index:10; background:rgba(255,255,255,0.8); padding:2px 6px; border-radius:4px; }
+
+/* 趋势数据指标表格 */
+.trend-metrics { display:flex; gap:0; border:1px solid #f0f0f0; border-radius:4px; margin-top:2px; flex-shrink:0; overflow:hidden; }
+.trend-metrics .metric-item { flex:1; text-align:center; padding:4px 0; position:relative; background:#fafafa; }
+.trend-metrics .metric-item:not(:last-child)::after { content:''; position:absolute; right:0; top:4px; bottom:4px; width:1px; background:#eee; }
+.trend-metrics .metric-value { font-size:13px; font-weight:700; line-height:1.2; }
+.trend-metrics .metric-label { font-size:9px; color:#999; margin-top:1px; }
+
+/* 底部操作 */
+.hot-actions { display:flex; gap:6px; flex-shrink:0; margin-top:2px; }
+.hot-actions .btn { padding:3px 6px; font-size:10px; }
+.hot-actions .btn-primary { padding:4px 8px; font-size:11px; }
+
+/* ======== Top10 ======== */
+.rank-item { display:flex; align-items:center; gap:5px; padding:3px 0; border-bottom:1px solid #f5f5f5; font-size:11px; transition:background 0.15s; }
+.rank-item:hover { background:#f0f5ff; border-radius:4px; }
+.rank-item:last-child { border-bottom:none; }
+.rank-num { width:18px; height:18px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
+.rank-num.hot { background:#ff4d4f; color:#fff; }
+.rank-num.warm { background:#ff7a45; color:#fff; }
+.rank-num.normal { background:#f5f5f5; color:#999; }
+.rank-title { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#333; }
+.rank-heat { font-size:10px; color:#ff4d4f; font-weight:600; flex-shrink:0; }
+
+/* ======== 我的待办 / 工作集 ======== */
+.todo-item { display:flex; align-items:center; gap:6px; padding:4px 0; font-size:11px; border-bottom:1px solid #f5f5f5; transition:opacity 0.2s; }
+.todo-item:last-child { border-bottom:none; }
+.todo-item.completed { opacity:0.55; }
+.todo-item.completed .todo-text { text-decoration:line-through; color:#999; }
+.todo-check { width:14px; height:14px; border:1.5px solid #ccc; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; flex-shrink:0; color:transparent; transition:all 0.15s; }
+.todo-check:hover { border-color:#52c41a; }
+.todo-check.checked { background:#52c41a; border-color:#52c41a; color:#fff; }
+.todo-text { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#333; }
+
+.workset-stats { display:flex; gap:8px; margin-top:6px; }
+.workset-stat { text-align:center; flex:1; }
+.workset-stat-val { font-size:20px; font-weight:700; color:#222; line-height:1; }
+.workset-stat-label { font-size:11px; color:#999; }
+.workset-current { margin-top:6px; padding:6px; background:#f8f9fa; border-radius:6px; font-size:11px; }
+.workset-current-title { font-weight:600; margin-bottom:3px; font-size:12px; }
+.workset-current-meta { font-size:10px; color:#999; display:flex; justify-content:space-between; align-items:center; }
+
+/* ======== 相关话题推荐 ======== */
+.topic-list { list-style:none; padding:0; margin:0; }
+.topic-item { display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid #f5f5f5; cursor:pointer; font-size:11px; line-height:1.3; }
+.topic-item:last-child { border-bottom:none; }
+.topic-rank { width:16px; height:16px; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; background:#f5f5f5; color:#999; flex-shrink:0; }
+.topic-rank.hot { background:#ff4d4f; color:#fff; }
+.topic-title { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#333; font-weight:500; }
+.topic-tag-small { font-size:9px; color:#722ed1; background:#f9f0ff; padding:1px 4px; border-radius:3px; flex-shrink:0; }
+.topic-heat { font-size:10px; color:#ff4d4f; font-weight:600; flex-shrink:0; min-width:32px; text-align:right; }
+
+/* ======== 物料制作 ======== */
+.material-form-grid { display:flex; flex-direction:column; gap:3px; }
+.material-form-row { display:flex; gap:5px; }
+.material-form-group { display:flex; flex-direction:column; gap:1px; flex:1; }
+.material-form-group label { font-size:10px; color:#999; font-weight:500; }
+.material-form-group input, .material-form-group select { width:100%; box-sizing:border-box; padding:3px 6px; border:1px solid #eee; border-radius:4px; font-size:11px; outline:none; color:#333; background:#fff; height:24px; }
+.material-form-group input:focus, .material-form-group select:focus { border-color:#eb2f96; }
+.material-upload-area { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; width:40px; height:40px; border:1.5px dashed #ddd; border-radius:6px; cursor:pointer; transition:border-color 0.15s; flex-shrink:0; }
+.material-upload-area:hover { border-color:#eb2f96; }
+.material-upload-thumbs { display:flex; gap:4px; flex-wrap:wrap; }
+.material-thumb { position:relative; width:40px; height:40px; border-radius:6px; overflow:hidden; border:1px solid #eee; flex-shrink:0; }
+.material-thumb img { width:100%; height:100%; object-fit:cover; }
+.material-thumb-remove { position:absolute; top:0; right:0; width:14px; height:14px; background:rgba(0,0,0,0.5); color:#fff; border-radius:0 0 0 6px; display:flex; align-items:center; justify-content:center; font-size:9px; cursor:pointer; line-height:1; }
+.material-preview-box { flex:1; min-height:0; background:#f8f9fa; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
+.material-preview-placeholder { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.material-loading { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.material-loading .spinner { width:20px; height:20px; border:2px solid #f3f3f3; border-top:2px solid #eb2f96; border-radius:50%; animation:spin 1s linear infinite; }
+.material-download-btn { position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.6); color:#fff; padding:4px 10px; border-radius:4px; font-size:11px; text-decoration:none; cursor:pointer; transition:background 0.15s; z-index:10; border:none; outline:none; }
+.material-download-btn:hover { background:rgba(0,0,0,0.85); }
+.mat-desc-input { width:100%; box-sizing:border-box; min-height:50px; max-height:100px; padding:5px 8px; border:1px solid #eee; border-radius:4px; font-size:11px; line-height:1.5; resize:vertical; outline:none; color:#333; font-family:inherit; }
+.mat-desc-input:focus { border-color:#eb2f96; }
+
+/* ======== 内容生成（新布局：紧凑模式） ======== */
+.content-gen-wrapper { display:flex; flex-direction:column; height:100%; gap:6px; }
+.content-gen-top { display:flex; gap:8px; flex:1; min-height:0; }
+.content-gen-left { display:flex; flex-direction:column; min-height:0; flex:0 0 40%; }
+.content-gen-right { display:flex; flex-direction:column; min-height:0; flex:1; gap:6px; }
+.title-list { list-style:none; padding:0; margin:0; overflow-y:auto; min-height:0; }
+.title-item { padding:3px 5px; font-size:11px; border-bottom:1px solid #f5f5f5; display:flex; gap:4px; align-items:center; line-height:1.3; cursor:pointer; transition:background 0.15s; border-radius:4px; }
+.title-item:hover { background:#f8f8ff; }
+.title-item.selected { background:#f0e6ff; border:1px solid #d3adf7; }
+.title-item:last-child { border-bottom:none; }
+.title-num { width:16px; height:16px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; background:#f5f5f5; color:#999; flex-shrink:0; }
+.title-num.hot { background:#ff4d4f; color:#fff; }
+.title-text { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.title-tag-inline { font-size:9px; color:#722ed1; background:#f9f0ff; padding:1px 4px; border-radius:3px; flex-shrink:0; }
+.analysis-box { background:#f8f9fa; border-radius:4px; padding:5px 7px; font-size:11px; line-height:1.3; }
+.analysis-box .analysis-title { font-size:10px; font-weight:700; color:#666; margin-bottom:2px; display:flex; align-items:center; gap:4px; }
+.analysis-box .analysis-body { color:#333; white-space:pre-wrap; max-height:40px; overflow-y:auto; }
+.full-text-box { background:#fafafa; border:1px solid #eee; border-radius:4px; padding:6px; font-size:11px; line-height:1.5; color:#333; flex:1; overflow-y:auto; white-space:pre-wrap; min-height:0; }
+.content-gen-actions { display:flex; gap:6px; flex-shrink:0; }
+.content-gen-actions .btn { flex:1; justify-content:center; padding:3px 6px; font-size:10px; }
+.content-gen-actions .btn:disabled { opacity:0.5; cursor:not-allowed; }
+.mascot-area { flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding:0; overflow:visible; gap:2px; }
+.mascot-area .mascot-img-wrap { position:relative; display:flex; align-items:flex-end; justify-content:center; width:100%; height:100%; overflow:visible; }
+.mascot-area img { width:auto; height:auto; max-width:100%; max-height:none; object-fit:contain; transform:scale(2.0); transform-origin:bottom center; filter:none; box-shadow:none; }
+.mascot-area .mascot-caption { font-size:11px; color:#999; text-align:center; line-height:1.4; flex-shrink:0; }
+.mascot-area .mascot-caption strong { color:#333; font-weight:600; display:block; margin-bottom:2px; }
+.content-input-label { display:flex; justify-content:space-between; font-size:11px; font-weight:600; color:#666; margin-bottom:2px; flex-shrink:0; }
+.content-input { width:100%; border:1px solid #eee; border-radius:4px; padding:3px 8px; font-size:11px; resize:none; outline:none; color:#333; height:26px; line-height:1.3; }
+
+
+/* ======== 最近生成 ======== */
+.recent-list { list-style:none; }
+.recent-item { display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid #f5f5f5; font-size:11px; }
+.recent-item:last-child { border-bottom:none; }
+.recent-icon { width:24px; height:24px; border-radius:4px; background:#f8f9fa; display:flex; align-items:center; justify-content:center; color:#999; font-size:11px; flex-shrink:0; }
+.recent-info { flex:1; min-width:0; }
+.recent-title { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; color:#333; }
+.recent-meta { font-size:10px; color:#999; }
+.recent-status { font-size:10px; padding:2px 6px; border-radius:3px; flex-shrink:0; font-weight:500; }
+.status-done { background:#f6ffed; color:#52c41a; }
+.status-pending { background:#fffbe6; color:#faad14; }
+
+/* ======== 常用模板快捷 ======== */
+.template-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.template-item { display:flex; align-items:center; gap:6px; padding:4px; background:#fafafa; border-radius:6px; cursor:pointer; border:1px solid #eee; }
+.template-icon { font-size:16px; width:28px; text-align:center; flex-shrink:0; }
+.template-info { min-width:0; }
+.template-name { font-size:11px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#333; }
+.template-desc { font-size:10px; color:#999; }
+
+/* ======== 滚动条美化 ======== */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#ddd; border-radius:2px; }
+@keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<div class="topbar">
+  <div class="logo">
+    <img src="./images/logo.png" alt="logo">
+    <span>美团装备研究所</span>
+  </div>
+  <div class="topbar-center">内容运营中心</div>
+  <div class="topbar-right">
+    <div class="avatar"><i class="fas fa-user-astronaut"></i></div>
+    <span>内容运营官</span>
+    <i class="fas fa-chevron-down" style="font-size:10px;"></i>
+    <i class="fas fa-bell" style="color:#999;"></i>
+    <i class="far fa-question-circle" style="color:#999;"></i>
+    <span>帮助中心</span>
+  </div>
+</div>
+
+<!-- 主内容 -->
+<div class="main">
+  <div class="main-grid">
+
+    <!-- 1. 账号概览 —— 小红书账号数据 -->
+    <div class="card hot-card" style="grid-column:1; grid-row:1 / span 2;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-fire" style="color:#ff2442;"></i> 账号概览</div>
+        <div style="font-size:11px;color:#999;">更新时间：<span id="update-time">10:30</span> <i class="fas fa-sync-alt" style="cursor:pointer;margin-left:4px;"></i></div>
+      </div>
+      <div class="card-body">
+        <!-- 小红书账号信息 -->
+        <div class="xhs-profile" id="xhs-profile">
+          <div class="xhs-avatar-wrap">
+            <img src="./images/logo.png" alt="头像" class="xhs-avatar" id="xhs-avatar">
+            <div class="xhs-info">
+              <div class="xhs-name" id="xhs-name">美团装备研究所 <span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:#1890ff;border-radius:50%;color:#fff;font-size:9px;margin-left:2px;vertical-align:middle;"><i class="fas fa-check" style="font-size:8px;"></i></span></div>
+              <div class="xhs-id" id="xhs-id">小红书号：63048899491&nbsp;&nbsp;|&nbsp;&nbsp;IP属地：北京</div>
+            </div>
+            <button class="xhs-follow-btn">+ 关注</button>
+          </div>
+          <div class="xhs-bio" id="xhs-bio">探索不一样的骑手装备<br>认准唯一官号 其他均不是所长哦</div>
+          <div class="xhs-stats" id="xhs-stats">
+            <div class="xhs-stat">
+              <div class="xhs-stat-num" id="xhs-following">8</div>
+              <div class="xhs-stat-label">关注</div>
+            </div>
+            <div class="xhs-stat">
+              <div class="xhs-stat-num" id="xhs-followers">4.7万</div>
+              <div class="xhs-stat-label">粉丝</div>
+            </div>
+            <div class="xhs-stat">
+              <div class="xhs-stat-num" id="xhs-likes">5.7万</div>
+              <div class="xhs-stat-label">获赞与收藏</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 热度趋势图 -->
+        <div class="hot-trend">
+          <div class="trend-label">热度趋势（近24小时）</div>
+          <div class="trend-chart" id="trend-chart"></div>
+          <div class="peak-value">7,856</div>
+        </div>
+
+        <!-- 数据指标表格 -->
+        <div class="trend-metrics" id="trend-metrics">
+          <div class="metric-item">
+            <div class="metric-value" style="color:#ff4d4f;">7,856</div>
+            <div class="metric-label">峰值</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" style="color:#1890ff;">5,234</div>
+            <div class="metric-label">均值</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" style="color:#52c41a;">2,100</div>
+            <div class="metric-label">最低</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" style="color:#faad14;">5,400</div>
+            <div class="metric-label">当前</div>
+          </div>
+        </div>
+
+        <!-- 底部操作 -->
+        <div class="hot-actions" style="margin-top:6px;">
+          <button class="btn btn-primary" onclick="generatePack()"><i class="fas fa-wand-magic-sparkles"></i> 一键生成内容包</button>
+          <button class="btn btn-secondary" onclick="showAngles()"><i class="fas fa-lightbulb"></i> 生成话题角度</button>
+          <button class="btn btn-secondary" onclick="riskCheck()"><i class="fas fa-shield-alt"></i> 风险检查</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Top10 热点榜单 -->
+    <div class="card" style="grid-column:2; grid-row:1 / span 2;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-chart-line" style="color:#ff7a45;"></i> Top10 热点榜单</div>
+        <span class="card-more" onclick="showYesterdayData()">昨日数据 <i class="fas fa-chevron-right" style="font-size:10px;"></i></span>
+      </div>
+      <div class="card-body" style="padding:6px 10px;">
+        <ul class="rank-list" id="rank-list">
+          <li class="rank-item" style="justify-content:center;color:#999;font-size:12px;">加载中...</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 3. 我的待办 -->
+    <div class="card" style="grid-column:3; grid-row:1;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-check-square" style="color:#52c41a;"></i> 我的待办</div>
+        <span class="card-more" onclick="showTodoInput()">+ 提交待办</span>
+      </div>
+      <div class="card-body" style="padding:6px 10px; display:flex; flex-direction:column;">
+        <div id="todo-input-area" style="display:none; gap:4px; margin-bottom:6px; flex-direction:column;">
+          <input type="text" id="todo-input-text" placeholder="输入待办事项..." style="padding:4px 8px; border:1px solid #ddd; border-radius:4px; font-size:11px; outline:none;" />
+          <div style="display:flex; gap:4px; justify-content:flex-end;">
+            <button class="btn btn-secondary" style="padding:2px 8px; font-size:10px;" onclick="hideTodoInput()">取消</button>
+            <button class="btn btn-primary" style="padding:2px 8px; font-size:10px;" onclick="submitTodo()">提交</button>
+          </div>
+        </div>
+        <ul class="todo-list" id="todo-list" style="flex:1; overflow-y:auto; min-height:0;">
+          <li class="todo-placeholder" style="text-align:center; color:#999; font-size:11px; padding:16px 0;">暂无待办，点击上方提交待办</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 4. 历史生成记录 —— 展示最近3条生成内容标题 -->
+    <div class="card" style="grid-column:3; grid-row:2;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-history" style="color:#1890ff;"></i> 历史生成记录</div>
+        <span class="card-more" onclick="showWorksetMore()">更多 <i class="fas fa-chevron-right" style="font-size:10px;"></i></span>
+      </div>
+      <div class="card-body" style="padding:6px 10px;">
+        <ul class="recent-list" id="workset-list">
+          <li class="recent-item" style="justify-content:center; color:#999; font-size:11px;">暂无生成记录，生成内容后自动记录</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 6. 物料素材制作 -->
+    <div class="card" style="grid-column:2; grid-row:3 / span 3;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-palette" style="color:#eb2f96;"></i> 物料素材制作</div>
+        <button class="btn btn-primary" style="padding:4px 10px;font-size:11px;" onclick="generateMaterial()"><i class="fas fa-wand-magic-sparkles"></i> 生成素材</button>
+      </div>
+      <div class="card-body" style="padding:8px 10px; display:flex; flex-direction:column; gap:5px;">
+        <!-- 上方：素材信息填写 -->
+        <div class="material-form" style="flex-shrink:0;">
+          <div style="font-size:11px; font-weight:600; color:#999; margin-bottom:3px;">素材信息</div>
+          <div class="material-form-grid">
+            <div class="material-form-row">
+              <div class="material-form-group" style="flex:0 0 55px;">
+                <label>宽度</label>
+                <input type="text" id="mat-width" placeholder="1080" value="1080" />
+              </div>
+              <div class="material-form-group" style="flex:0 0 55px;">
+                <label>高度</label>
+                <input type="text" id="mat-height" placeholder="1920" value="1920" />
+              </div>
+              <div class="material-form-group" style="flex:1;">
+                <label>风格</label>
+                <input type="text" id="mat-style" placeholder="输入风格" value="国漫风" />
+              </div>
+              <div class="material-form-group" style="flex:1;">
+                <label>图片素材 <span style="font-weight:normal; color:#bbb;">(最多5张)</span></label>
+                <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
+                  <!-- Upload trigger -->
+                  <div class="material-upload-area" id="mat-upload-area" onclick="document.getElementById('mat-file').click()">
+                    <i class="fas fa-plus" style="font-size:13px; color:#ccc;"></i>
+                    <span style="font-size:9px; color:#999;">添加</span>
+                    <input type="file" id="mat-file" accept="image/*" multiple style="display:none;" onchange="onMaterialUpload(this)" />
+                  </div>
+                  <!-- Preview thumbnails -->
+                  <div class="material-upload-thumbs" id="mat-upload-thumbs"></div>
+                </div>
+              </div>
+            </div>
+            <div class="material-form-row">
+              <div class="material-form-group" style="flex:1;">
+                <label>主标题</label>
+                <input type="text" id="mat-title" placeholder="输入主标题..." oninput="autoGenDesc()" />
+              </div>
+              <div class="material-form-group" style="flex:1;">
+                <label>副标题</label>
+                <input type="text" id="mat-subtitle" placeholder="输入副标题..." oninput="autoGenDesc()" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 中间：图片生成描述 -->
+        <div class="material-desc-area" style="flex-shrink:0;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:3px;">
+            <span style="font-size:11px; font-weight:600; color:#999;">图片生成描述</span>
+            <span class="card-more" style="font-size:10px; cursor:pointer;" onclick="autoGenDesc()">重新生成</span>
+          </div>
+          <textarea id="mat-desc" class="mat-desc-input" placeholder="填写素材信息后自动生成描述，可手动修改..." oninput="onDescEdit()"></textarea>
+        </div>
+
+        <!-- 下方：生成预览 + 下载 -->
+        <div class="material-preview" style="flex:1; min-height:0; display:flex; flex-direction:column; gap:3px;">
+          <div style="font-size:11px; font-weight:600; color:#999; flex-shrink:0;">生成预览</div>
+          <div class="material-preview-box" id="material-preview-box" style="position:relative;">
+            <div class="material-preview-placeholder" id="mat-placeholder">
+              <i class="fas fa-image" style="font-size:24px; color:#ddd;"></i>
+              <span style="font-size:11px; color:#bbb;">确认描述后点击生成素材</span>
+            </div>
+            <div class="material-loading" id="mat-loading" style="display:none;">
+              <div class="spinner"></div>
+              <span style="font-size:11px;color:#999;">美境AI设计师生成中...</span>
+            </div>
+            <img id="material-result-img" style="display:none; max-width:100%; max-height:100%; object-fit:contain; border-radius:6px; pointer-events:none;" src="" alt="生成结果" />
+            <button id="material-download-btn" class="material-download-btn" onclick="downloadMaterial()" style="display:none; border:none; outline:none;">
+              <i class="fas fa-download"></i> 下载
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 5. 内容生成 —— 占满row3-5，顶部嵌入相关话题横条 -->
+    <div class="card" style="grid-column:1; grid-row:3 / span 3;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-pen-fancy" style="color:#722ed1;"></i> 内容生成</div>
+        <span style="font-size:10px;color:#999;">AI 驱动 · 不聊价格 · 不硬广</span>
+      </div>
+      <div class="card-body" style="padding:6px 10px; display:flex; flex-direction:column; gap:6px;">
+        <!-- 相关话题横条 -->
+        <div style="flex-shrink:0; display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:2px 0; border-bottom:1px solid #f5f5f5; margin-bottom:2px;">
+          <span style="font-size:11px; font-weight:500; color:#722ed1; flex-shrink:0;"><i class="fas fa-hashtag" style="font-size:10px;"></i> 相关话题：</span>
+          <ul class="topic-list" id="topic-list" style="margin:0; padding:0; display:flex; flex-wrap:wrap; gap:6px; align-items:center; list-style:none; flex:1;">
+            <li class="topic-item" style="margin:0; padding:0; flex-shrink:0;"><span class="topic-rank" style="font-size:10px; width:16px; height:16px; line-height:16px;">1</span><span class="topic-title" style="font-size:10px;">加载中...</span></li>
+          </ul>
+          <span class="card-more" onclick="refreshTopics()" id="topic-refresh-btn" style="font-size:10px; flex-shrink:0;"><i class="fas fa-sync-alt" style="font-size:9px;"></i> 换一换</span>
+        </div>
+
+        <!-- 话题方向输入 -->
+        <div style="flex-shrink:0;">
+          <div class="content-input-label"><span>话题方向</span><span style="font-weight:400;color:#999;"><span id="input-count">0</span>/50</span></div>
+          <div style="display:flex; gap:6px;">
+            <textarea class="content-input" id="topic-input" rows="1" placeholder="请输入话题方向，如：夏季骑行防晒装备" oninput="updateInputCount()"></textarea>
+            <button class="btn btn-primary" onclick="aiGenerateTitles()" id="btn-gen-titles" style="flex-shrink:0; align-self:flex-start;"><i class="fas fa-wand-magic-sparkles"></i> 生成标题</button>
+          </div>
+        </div>
+
+        <!-- 左侧标题 + 右侧内容分析/正文 -->
+        <div class="content-gen-top">
+          <div class="content-gen-left">
+            <div class="content-input-label" style="flex-shrink:0;">生成标题 <span style="font-weight:400;color:#999;font-size:10px;">（点击选择）</span></div>
+            <ul class="title-list" id="title-list">
+              <li class="title-item" onclick="selectTitle(this, 0)" data-title="" data-type="">
+                <span class="title-num hot">1</span>
+                <span class="title-text">输入话题后生成标题</span>
+              </li>
+            </ul>
+<div class="mascot-area" id="mascot-area">
+  <div class="mascot-img-wrap" style="flex:1; min-height:0;">
+    <img src="./images/mascot.png" alt="美团装备研究所" />
+  </div>
+  <div class="mascot-caption">
+    <strong>AI 内容助手</strong>
+    输入话题方向后生成创意标题
+  </div>
+</div>
+            <div class="content-gen-actions" style="padding-top:4px;">
+              <button class="btn btn-secondary" onclick="aiGenerateBody()" id="btn-gen-body" disabled><i class="fas fa-paragraph"></i> 生成正文</button>
+              <button class="btn btn-primary" onclick="submitReview()" id="btn-submit" disabled><i class="fas fa-paper-plane"></i> 提交审核</button>
+            </div>
+          </div>
+          <div class="content-gen-right" id="content-gen-right">
+            <div class="content-input-label" style="flex-shrink:0;">内容分析</div>
+            <div class="analysis-box" id="analysis-focus">
+              <div class="analysis-title"><i class="fas fa-bullseye" style="color:#ff4d4f;"></i> 关注点</div>
+              <div class="analysis-body">输入话题方向后，AI 将围绕该话题提炼核心看点：读者最感兴趣的痛点、最想要的功能点、最关心的场景对比。例如「骑手的一天」话题，关注点可能集中在：日常装备真实体验、高强度工作下的装备选择、与同行交流的心得等。这些看点将决定正文的切入角度和内容权重。</div>
+            </div>
+            <div class="analysis-box" id="analysis-scene">
+              <div class="analysis-title"><i class="fas fa-eye" style="color:#1890ff;"></i> 第一视角场景</div>
+              <div class="analysis-body">选择标题后，AI 将以「所长」第一人称视角构建真实骑手生活场景：等红灯时暴晒、爬楼梯赶时间、深夜收工的疲惫、被同行搭话的趣味瞬间。场景有画面感、有细节、有情绪共鸣，让读者仿佛身临其境。不是广告话术，而是真实骑手日常。</div>
+            </div>
+            <div class="analysis-box" id="analysis-interaction">
+              <div class="analysis-title"><i class="fas fa-comments" style="color:#52c41a;"></i> 结尾互动</div>
+              <div class="analysis-body">正文生成后，AI 会设计一个自然有趣的评论区互动话题：可以是投票（"你们觉得NFC开锁实用还是噱头？"）、提问（"夏天跑单你们最怕什么？我先说——等红灯暴晒"）、晒物（"评论区交作业：你的箱子用了多久了？还活着吗？"）。互动设计的目标是提升评论率，而非生硬求赞。</div>
+            </div>
+            <div style="flex:1; min-height:0; display:flex; flex-direction:column;">
+              <div class="content-input-label" style="flex-shrink:0;">完整正文</div>
+              <div class="full-text-box" id="full-text-preview" style="font-size:11px; line-height:1.6; color:#555; padding:6px 8px; overflow-y:auto; flex:1;">
+                <div style="font-size:10px; color:#999; margin-bottom:6px; text-align:center;">📌 示例预览（选择标题并生成正文后，此处将显示实际内容）</div>
+                <div style="font-weight:500; color:#333; margin-bottom:6px; font-size:12px;">骑手的一天｜看完沉默了</div>
+                <div>早上六点半出门，我还觉得今天挺凉快的。结果中午爬了六楼送餐，后背全湿透了。等红灯的时候太阳直射，脖子火辣辣的，以前穿棉T恤黏在身上那个难受啊。</div>
+                <div style="margin-top:6px;">说的是真实经历。那次印象挺深——是去年七月最热的一个周五，我在朝阳区跑午高峰。系统连续派了三个六楼的单子，最后一单是老旧小区，没有电梯。我拎着两大袋奶茶往上爬，楼道里又闷又窄，还飘着一股消毒水味。爬到四楼的时候腿已经软了，扶着栏杆喘口气，听见楼上住户在喊"外卖到了吗"，我只能咬牙继续往上冲。</div>
+                <div style="margin-top:6px;">好不容易送到，开门的是个小姑娘，接过奶茶说了声"谢谢叔叔"就关门了。我站在楼道里愣了两秒，低头看看自己，衣服湿得能拧出水，裤脚还沾着泥点。那一下突然觉得挺心酸的，但紧接着系统又弹出新单子，只好转身下楼继续跑。</div>
+                <div style="margin-top:6px;">今天试了新到的速干衣，仿棉面料摸着像普通T恤，但汗湿后背居然不会黏！同样是爬六楼，送完午高峰回家，衣服已经干了，也没啥汗味。最惊喜的是腋下和后背的网眼设计，以前闷出一身汗的感觉明显少了。</div>
+                <div style="margin-top:6px;">下午在国贸附近等红灯，被三个同行问衣服哪买的，我说装备研究所的，他们表情就跟我免费送的一样😂其中一个兄弟还非要摸一下面料，说"这不就是普通T恤吗？"我说你穿一天就知道了。</div>
+                <div style="margin-top:6px;">傍晚收工路过便利店，店员看我衣服没湿透，问我是不是今天单子少。我说单子没少，是衣服换对了。她听完掏出手机记了名字，说给她老公也整一件——她老公也是跑众包的。</div>
+                <div style="margin-top:6px;">凌晨收工的时候算了算，以前一个月光T恤就得洗坏两三件，现在这件速干衣洗了十几次了，版型还在，也没起球。以前跑单一天换两件T恤，今天一件就搞定了。</div>
+                <div style="margin-top:6px; font-weight:500; color:#333;">你们夏天跑单最怕什么？我先说——老旧小区没电梯的六楼。评论区说说你们的崩溃瞬间！</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. 常用模板快捷 -->
+    <div class="card" style="grid-column:3; grid-row:4 / span 2;">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-th-large" style="color:#faad14;"></i> 常用模板快捷</div>
+        <span class="card-more">管理</span>
+      </div>
+      <div class="card-body">
+        <div class="template-grid">
+          <div class="template-item" onclick="useTemplate('xiaohongshu')">
+            <div class="template-icon" style="color:#ff2442;"><i class="fas fa-book-open"></i></div>
+            <div class="template-info"><div class="template-name">小红书笔记模板</div><div class="template-desc">种草图文</div></div>
+          </div>
+          <div class="template-item" onclick="useTemplate('koubo')">
+            <div class="template-icon" style="color:#fa8c16;"><i class="fas fa-microphone"></i></div>
+            <div class="template-info"><div class="template-name">口播脚本模板</div><div class="template-desc">短视频脚本</div></div>
+          </div>
+          <div class="template-item" onclick="useTemplate('title')">
+            <div class="template-icon" style="color:#722ed1;"><i class="fas fa-heading"></i></div>
+            <div class="template-info"><div class="template-name">标题钩子模板</div><div class="template-desc">吸睛标题</div></div>
+          </div>
+          <div class="template-item" onclick="useTemplate('poster')">
+            <div class="template-icon" style="color:#1890ff;"><i class="fas fa-image"></i></div>
+            <div class="template-info"><div class="template-name">物料海报模板</div><div class="template-desc">宣传海报</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ===== SMART CONTENT LIBRARY =====
+// 根据话题关键词匹配专业内容
+var CONTENT_LIBRARY = {
+  '防晒': {
+    keywords: ['防晒', '面罩', '冰袖', '遮阳', '紫外线', '冰丝', '防晒衣'],
+    titles: [
+      {title: '骑手防晒｜面罩+冰袖+防晒衣，一套配齐才60块', type: '清单', score: 9.8},
+      {title: '跑了3年单，夏天防晒我只认这3样｜不黑不闷不花冤枉钱', type: '经验', score: 9.6},
+      {title: '防晒面罩真的有用吗？实测30天对比，结果让我意外', type: '测评', score: 9.4},
+      {title: '新手防晒装备避坑｜这5个智商税我全交过，省下大几百', type: '避坑', score: 9.2},
+      {title: 'UPF50+冰袖 vs 普通冰袖｜防晒效果差距有多大？', type: '对比', score: 9.0},
+      {title: '夏天跑单脸晒脱皮？这款防晒面罩救了我', type: '共鸣', score: 8.9},
+      {title: '业内人士揭秘：防晒装备选购的隐藏门道，99%的人不知道', type: '揭秘', score: 8.7},
+      {title: '防晒衣是智商税吗？骑手实测告诉你真相', type: '测评', score: 8.5}
+    ],
+    body: {
+      hook: '你是不是也遇到过这种情况？夏天跑单一天下来，脸晒得通红，脖子黑白分明，回家照镜子自己都吓一跳。',
+      painPoints: '痛点1：紫外线强烈，长时间暴晒导致皮肤晒黑、晒伤，甚至脱皮\n痛点2：普通衣服不防晒，穿短袖跑单一天胳膊就分层\n痛点3：防晒装备选错，要么闷得喘不过气，要么防晒效果差\n痛点4：不知道防晒面罩和冰袖怎么搭配，买了不会用',
+      solutions: '解决方案：\n① 防晒面罩选冰丝材质+挂耳设计，透气不勒，UPF50+才能有效防紫外线\n② 冰袖选黑色或深色，防晒效果更好，UPF50+标准，价格10-30元\n③ 防晒衣选轻薄透气款，面料优先聚酯纤维+氨纶，不闷汗\n④ 搭配方案：防晒面罩（20-40元）+ 冰袖（10-30元）+ 防晒衣（50-100元）= 全套60-170元',
+      fullText: '去年夏天我没注意防晒，跑了两个月单，脸晒得脱皮，去医院花了大几百。今年我学乖了，提前配齐防晒装备，跑单一天脸不红、胳膊不黑。\n\n【防晒面罩】这是最重要的！我对比了5款面罩，最后选的是冰丝挂耳款。材质冰凉透气，挂耳设计不勒耳朵，还能拉下来当围脖。关键是UPF50+防晒，戴一整天脸不红。价格20-40元，能用一整个夏天。\n\n【冰袖】一定要选UPF50+的！我之前买过9.9包邮的冰袖，跑半天胳膊就晒红了。换成专业防晒冰袖后，黑色款防晒效果最好，戴一整天胳膊不分层。价格10-30元，这个钱不能省。\n\n【防晒衣】选轻薄透气款，面料成分看聚酯纤维+氨纶。我买的这款才80克，叠起来比手机还小，放包里不占地方。穿上去冰冰凉凉的，跑单不闷汗。价格50-100元，打折时候更便宜。\n\n【搭配技巧】早上出门先戴面罩，再穿防晒衣，最后套冰袖。三层防护，紫外线根本透不进来。中午最热的时候，面罩拉下来当围脖，脖子也不会晒黑。\n\n最后提醒：防晒不是夏天的事，春秋紫外线也很强。我现在的标配就是面罩+冰袖+防晒衣，跑单一年脸没黑过。\n\n你平时怎么防晒？评论区聊聊，点赞最高的送同款防晒面罩！',
+      cta: '你平时跑单怎么防晒？评论区聊聊，点赞最高的3位送同款防晒面罩！',
+      keywords: '骑手防晒,防晒面罩,冰袖,防晒衣,夏季跑单,美团装备',
+      hashtags: '#骑手防晒 #防晒面罩 #冰袖 #夏季跑单 #美团装备'
+    }
+  },
+  '头盔': {
+    keywords: ['头盔', '安全帽', '通风头盔', '3C认证', '安全'],
+    titles: [
+      {title: '骑手头盔怎么选？3C认证+通风设计，这3款闭眼入', type: '指南', score: 9.8},
+      {title: '50元头盔 vs 500元头盔｜摔过一次才知道差距', type: '对比', score: 9.6},
+      {title: '头盔不是越贵越好！跑了2年单，我只推荐这一款', type: '测评', score: 9.4},
+      {title: '新手头盔避坑｜这4个雷区别踩，省下大几百', type: '避坑', score: 9.2},
+      {title: '3C认证头盔真的有必要吗？一次事故让我明白', type: '共鸣', score: 9.0},
+      {title: '夏季头盔选购指南｜通风孔数量决定你一天的心情', type: '指南', score: 8.9},
+      {title: '头盔内衬怎么洗？老骑手教你3分钟搞定', type: '技巧', score: 8.7},
+      {title: '换了5个头盔后，我终于找到了性价比之王', type: '经验', score: 8.5}
+    ],
+    body: {
+      hook: '你是不是也遇到过这种情况？头盔戴一天闷得头晕，摘下头盔头发全湿，夏天简直是折磨。',
+      painPoints: '痛点1：头盔不透气，戴一天闷得头晕、头发全湿\n痛点2：便宜的没3C认证，安全性差，出事保护不了头部\n痛点3：头盔太重，跑单一天脖子酸疼\n痛点4：内衬不能拆洗，戴久了臭烘烘的',
+      solutions: '解决方案：\n① 选3C认证头盔，这是底线，没有认证的一律不要买\n② 通风孔至少6个以上，头顶+前额+后脑都要有通风口\n③ 重量控制在300g以内，太重一天下来脖子受不了\n④ 内衬选可拆卸设计，方便清洗，保持干净卫生\n⑤ 预算分配：入门200-300元，进阶300-500元，专业500-800元',
+      fullText: '我刚开始跑单的时候，为了省钱买了个50块的头盔，没有3C认证，戴一天闷得头晕。后来出了个小事故，头盔裂了，幸好人没事，吓得我立马换了好头盔。\n\n【3C认证是底线】买头盔先看有没有3C认证，没有的一律不要买。3C认证是国家强制性标准，通过了才能上市销售。我推荐的品牌都有3C认证，价格200-500元，安全有保障。\n\n【通风设计】夏天跑单，头盔通风太重要了。我对比了3款头盔，通风孔最多的那款戴一整天都不闷。选购时看：头顶通风孔≥3个，前额通风孔≥2个，后脑通风孔≥1个。总共6个以上的通风孔才够。\n\n【重量控制】头盔重量控制在300g以内，太重一天下来脖子酸疼。我现在的头盔280g，戴一整天几乎没感觉。选购时看产品参数，超过350g的就不要考虑了。\n\n【内衬清洗】头盔内衬一定要选可拆卸的！我每周拆下来洗一次，用中性洗涤剂泡5分钟，轻轻搓洗，晾干后装回去。干净的头盔戴起来舒服多了，也不会有异味。\n\n【推荐搭配】头盔+透明短镜片（防飞虫）+下巴垫（防磨）。夏天不要用深色镜片，晚上看不清路。\n\n最后提醒：头盔是保命的东西，千万不要贪便宜。200-500元就能买到很好的头盔，这个钱不能省。\n\n你用的什么头盔？评论区聊聊，点赞最高的送头盔清洁套装！',
+      cta: '你平时用什么头盔？评论区聊聊，点赞最高的3位送头盔清洁套装！',
+      keywords: '骑手头盔,3C认证头盔,通风头盔,安全装备,夏季跑单',
+      hashtags: '#骑手头盔 #3C认证头盔 #通风头盔 #安全装备 #美团骑手'
+    }
+  },
+  '手套': {
+    keywords: ['手套', '骑行手套', '半指手套', '全指手套', '减震手套'],
+    titles: [
+      {title: '骑手手套实测｜硅胶垫 vs 海绵垫，减震效果差3倍', type: '测评', score: 9.7},
+      {title: '半指还是全指？夏季骑手手套选购指南', type: '指南', score: 9.5},
+      {title: '9.9元手套 vs 99元手套｜用了3个月，差距全在这', type: '对比', score: 9.3},
+      {title: '手套选错手麻一天！老骑手教你3招选对', type: '避坑', score: 9.1},
+      {title: '夏天手套闷汗？透气款手套实测，这3款不闷手', type: '测评', score: 9.0},
+      {title: '手套破了3双后，我终于找到耐用的', type: '经验', score: 8.8},
+      {title: '触控手套有用吗？实测手机触屏成功率', type: '测评', score: 8.6},
+      {title: '手套清洗技巧｜3分钟搞定，延长寿命半年', type: '技巧', score: 8.4}
+    ],
+    body: {
+      hook: '你是不是也遇到过这种情况？跑单一天下来手麻手疼，握车把都没力气，特别是虎口位置，酸得抬不起来。',
+      painPoints: '痛点1：长时间握车把，手麻手疼，虎口位置酸痛\n痛点2：手套不透气，夏天戴一天手出汗，黏糊糊的难受\n痛点3：便宜的没有减震垫，过减速带震得手疼\n痛点4：手套不耐用，一个月就磨破，频繁更换浪费钱',
+      solutions: '解决方案：\n① 选带硅胶减震垫的手套，减震效果比海绵垫好3倍\n② 夏季选半指手套或透气网眼款，手背透气不闷汗\n③ 掌心材质选耐磨防滑的，增加握把稳定性\n④ 预算20-50元，低于20元的减震效果差，不建议购买\n⑤ 触屏功能必须有，方便看订单和导航',
+      fullText: '我刚开始跑单的时候，为了省钱戴普通手套，跑一天单手麻得筷子都拿不稳。后来买了专业骑行手套，才知道差距有多大。\n\n【减震垫】这是最关键的！普通手套没有减震垫，过减速带、井盖的时候震得手疼。专业骑行手套掌心有硅胶减震垫，能把震动分散到整个手掌，跑单一天手不麻。我对比过硅胶垫和海绵垫，硅胶垫减震效果好3倍，价格贵10块钱但值得。\n\n【半指 vs 全指】夏天我推荐半指手套，手指露出来透气，操作手机也方便。但要注意：半指手套掌心部分必须有防滑垫，不然握车把容易打滑。秋冬选全指手套，保暖效果更好。\n\n【透气设计】夏天手套一定要透气！手背选网眼面料，手指缝也有透气孔。我现在的这款手套，手背是大面积网眼，戴一整天手不闷汗。掌心用耐磨防滑材质，握车把很稳。\n\n【触屏功能】必须选带触屏功能的手套！跑单要经常看订单、导航，摘手套太麻烦。触屏手套指尖有导电材质，可以直接操作手机。买之前测试一下触屏灵敏度，有些便宜的触屏成功率很低。\n\n【耐用性】掌心材质选耐磨的，我这款手套掌心是超纤材质，跑了3个月掌心没磨损。之前买的便宜手套，一个月掌心就磨破了。\n\n【推荐搭配】半指手套（夏季）+ 全指手套（秋冬），两双轮换。预算20-50元/双，性价比高。\n\n最后提醒：手套是每天直接接触的东西，一定要干净。我每周洗一次，用中性洗涤剂泡5分钟，阴凉处晾干。\n\n你用的什么手套？评论区聊聊，点赞最高的送同款手套！',
+      cta: '你平时用什么手套？评论区聊聊，点赞最高的3位送同款手套！',
+      keywords: '骑手手套,骑行手套,半指手套,减震手套,夏季装备',
+      hashtags: '#骑手手套 #骑行手套 #半指手套 #夏季装备 #美团骑手'
+    }
+  },
+  '手机支架': {
+    keywords: ['手机支架', '支架', '导航', '手机架', '防抖支架'],
+    titles: [
+      {title: '骑手手机支架实测｜防抖款 vs 普通款，导航不晃全靠它', type: '测评', score: 9.7},
+      {title: '手机支架怎么选？3个标准，新手一看就会', type: '指南', score: 9.5},
+      {title: '支架摔过3次手机后，我终于找到稳的', type: '经验', score: 9.3},
+      {title: '9.9元支架 vs 59元支架｜用了1个月，差距太明显', type: '对比', score: 9.1},
+      {title: '手机支架安装位置｜这2个位置最稳，其他都白搭', type: '技巧', score: 9.0},
+      {title: '雨天手机支架进水？防水款实测，这款真的防', type: '测评', score: 8.8},
+      {title: '支架松动导致手机摔碎？老骑手教你3招固定', type: '避坑', score: 8.6},
+      {title: '手机支架选购清单｜照着买，导航稳如老狗', type: '清单', score: 8.4}
+    ],
+    body: {
+      hook: '你是不是也遇到过这种情况？过减速带手机支架松动，手机差点飞出去，吓得心跳漏一拍。',
+      painPoints: '痛点1：普通支架不稳，过减速带或颠簸路面手机晃动甚至掉落\n痛点2：支架安装不牢固，骑久了松动，需要频繁调整\n痛点3：雨天支架进水，手机充电口受潮，影响导航\n痛点4：便宜的支架材质差，用一个月就断裂',
+      solutions: '解决方案：\n① 选防抖减震款，带硅胶防滑垫和弹簧夹紧，过减速带不晃动\n② 安装位置选车把中间或后视镜杆，这两个位置最稳\n③ 材质选铝合金或高强度塑料，低于20元的容易断裂\n④ 选带防水盖的，雨天保护手机充电口\n⑤ 夹紧力度可调，适配4-7寸手机',
+      fullText: '我刚开始跑单的时候，用买车送的手机支架，过个减速带手机就飞出去了，屏幕摔碎花了我大几百。后来换了防抖支架，才知道差距有多大。\n\n【防抖设计】这是最重要的！普通支架就是一个夹子，过减速带手机晃动厉害。防抖支架有弹簧减震+硅胶防滑垫，能把震动吸收掉，手机稳如老狗。我实测过，过同样的减速带，普通支架手机晃动3cm，防抖支架只晃动不到1cm。\n\n【安装位置】手机支架安装位置很关键。推荐两个位置：车把中间（视野最好，看导航不用低头）或后视镜杆（最稳，不占用把空间）。千万不要装在车把边缘，转弯的时候容易磕到。\n\n【材质选择】支架材质选铝合金或高强度ABS塑料。铝合金的最耐用，但价格贵一些（50-80元）。高强度塑料的性价比高（30-50元），用一年没问题。低于20元的支架基本都是回收塑料，用一个月就断裂。\n\n【防水设计】雨天跑单，支架防水很重要。选带防水盖的支架，能遮住手机充电口和扬声器。我这款支架有透明防水盖，下雨天导航不受影响，手机也没进过水。\n\n【夹紧范围】一定要选夹紧力度可调的！有些支架夹得太松，大屏手机容易掉；夹得太紧，又伤手机边框。可调设计的能适应4-7寸各种手机，横屏竖屏都能用。\n\n【推荐搭配】防抖支架+手机防水袋+车载充电器。这三件套配齐，跑单一天导航无忧。\n\n最后提醒：手机支架是安全装备，松动一定要及时检查。我每天早上都会拧一下螺丝，确保牢固。\n\n你用的什么手机支架？评论区聊聊，点赞最高的送防抖支架！',
+      cta: '你平时用什么手机支架？评论区聊聊，点赞最高的3位送防抖支架！',
+      keywords: '骑手手机支架,导航支架,防抖支架,骑行装备,美团骑手',
+      hashtags: '#骑手手机支架 #导航支架 #防抖支架 #骑行装备 #美团骑手'
+    }
+  },
+  '餐箱': {
+    keywords: ['餐箱', '保温箱', '腰靠', '腰靠餐箱', '保温袋', '外卖箱'],
+    titles: [
+      {title: '餐箱保温实测｜3小时外卖还是热的？这2款真的行', type: '测评', score: 9.8},
+      {title: '腰靠餐箱 vs 普通餐箱｜跑单一天，腰不酸的秘密', type: '对比', score: 9.6},
+      {title: '餐箱怎么选？容量+保温+重量，3个标准搞定', type: '指南', score: 9.4},
+      {title: '新手餐箱避坑｜这4个坑我全踩过，省下好几百', type: '避坑', score: 9.2},
+      {title: '餐箱容量选多大？30L vs 40L vs 50L实测对比', type: '对比', score: 9.0},
+      {title: '餐箱清洁技巧｜3分钟搞定，没有异味', type: '技巧', score: 8.8},
+      {title: '腰靠餐箱用了半年，我的腰真的不酸了', type: '共鸣', score: 8.7},
+      {title: '餐箱内胆怎么选？铝箔 vs 珍珠棉，保温差2小时', type: '测评', score: 8.5}
+    ],
+    body: {
+      hook: '你是不是也遇到过这种情况？外卖送到顾客手里，餐盒已经凉了，被差评投诉，一天白跑。',
+      painPoints: '痛点1：餐箱保温差，夏天冷饮变热饮，冬天热餐变凉餐\n痛点2：普通餐箱没有腰靠，跑单一天腰酸背痛\n痛点3：餐箱容量选错，太大碍事，太小装不下大单\n痛点4：餐箱内胆材质差，用一个月就破，保温效果直线下降',
+      solutions: '解决方案：\n① 保温层选铝箔+珍珠棉双层，保温效果比单层好2小时\n② 腰靠餐箱选人体工学设计，腰部支撑能减轻50%压力\n③ 容量选择：午高峰选40-50L，日常30-40L足够\n④ 内胆选可拆卸的，方便清洗，保持卫生\n⑤ 预算：入门80-150元，进阶150-300元，专业300-500元',
+      fullText: '我刚开始跑单的时候，为了省钱买了个50块的餐箱，保温层就是一层薄薄的泡沫。夏天送的冰奶茶到顾客手里变成温的了，被差评了好几次。后来换了专业保温餐箱，再也没有投诉过。\n\n【保温层】这是餐箱的核心！保温层选铝箔+珍珠棉双层结构，保温效果比单层好2小时。我实测过，夏天32度天气，冰奶茶放在双层保温餐箱里，3小时后还是冰的。单层保温餐箱1小时就温了。\n\n【腰靠设计】强烈建议选腰靠餐箱！普通餐箱没有腰部支撑，跑单一天腰酸背痛。腰靠餐箱有弧形腰托，贴合腰部曲线，能减轻50%腰部压力。我用了半年腰靠餐箱，腰真的不酸了。价格贵50-100元，但值得。\n\n【容量选择】餐箱容量不是越大越好。午高峰订单多，选40-50L能装8-10单。日常跑单30-40L就够了，太大反而碍事，转弯不方便。我推荐买2个餐箱轮换：大容量（40-50L）午高峰用，小容量（30-40L）平时用。\n\n【内胆材质】内胆选铝箔材质，保温效果好，而且容易清洗。珍珠棉内胆保温效果差一些，但价格便宜。我推荐铝箔+珍珠棉双层内胆，保温效果最好。内胆一定要选可拆卸的，每周洗一次，保持卫生。\n\n【固定方式】餐箱固定要选多绑带设计，至少3根绑带固定。我现在的餐箱有4根绑带，过减速带、急刹车都不会移位。绑带选松紧带+卡扣设计，安装拆卸都方便。\n\n【推荐搭配】腰靠餐箱+保温内胆+分区隔板。分区隔板能把餐箱分成上下两层，冷饮放下层（更保温），热餐放上层，不串味。\n\n最后提醒：餐箱是直接接触食品的，一定要保持干净。我每天收工后都会擦一遍，每周深度清洗一次。\n\n你用的什么餐箱？评论区聊聊，点赞最高的送保温内胆！',
+      cta: '你平时用什么餐箱？评论区聊聊，点赞最高的3位送保温内胆！',
+      keywords: '骑手餐箱,保温箱,腰靠餐箱,外卖箱,保温袋',
+      hashtags: '#骑手餐箱 #保温箱 #腰靠餐箱 #外卖装备 #美团骑手'
+    }
+  },
+  '骑士节': {
+    keywords: ['骑士节', '717', '骑士', '节日', '倒计时', '庆祝', '致敬'],
+    titles: [
+      {title: '717骑士节倒计时｜这一天，我想对每一位骑手说声谢谢', type: '共鸣', score: 9.9},
+      {title: '骑士节倒计时3天｜去年这一天，我收到了最好的礼物', type: '故事', score: 9.7},
+      {title: '717骑士节活动剧透｜今年福利比去年还多', type: '揭秘', score: 9.5},
+      {title: '倒计时开启！717骑士节必薅攻略，错过等一年', type: '攻略', score: 9.3},
+      {title: '从717骑士节看骑手变迁｜这5年变化太大了', type: '回顾', score: 9.1},
+      {title: '骑士节倒计时｜你最想在717收到什么？', type: '互动', score: 9.0},
+      {title: '717当天跑单有彩蛋？内部消息提前放', type: '爆料', score: 8.8},
+      {title: '致敬每一位717骑士｜你们的付出，有人看见', type: '致敬', score: 8.6}
+    ],
+    body: {
+      hook: '717骑士节是美团专门为骑手设立的节日，核心看点包括：平台对骑手的关怀政策、节日专属福利与活动、骑手群体的社会认同感，以及骑手之间互相鼓励的温情故事。这些看点决定了内容的切入角度——不是商业推广，而是真实情感连接。',
+      painPoints: '去年717骑士节，我在商圈站点领到了平台发的节日礼盒。里面有个防暑降温包、一副定制冰袖，还有一张手写感谢卡。旁边有个跑单5年的老骑手，打开礼盒看了半天，跟我说："这是我第一次觉得，有人真的把我们当回事。"他说这话的时候，眼睛有点红。',
+      solutions: '解决方案：\n① 717骑士节当天去站点领取专属节日礼包，包含防暑降温用品+定制纪念品\n② 关注骑手APP内的节日活动通知，积分翻倍、专属勋章等福利别错过\n③ 参与"骑士家庭日"活动，带家人来站点参加聚餐，感受骑手大家庭的温暖\n④ 在社交媒体分享你的骑士节故事，让更多人看见骑手的价值\n⑤ 加入骑手社群，节日当天互相祝福，增强骑手群体的归属感',
+      fullText: '还有3天就是717骑士节了。\n\n说实话，刚开始跑单的时候，我不知道有骑士节。直到有一天，站长在群里发通知说"717当天来站点领福利"，我才意识到：原来我们这个群体，也有属于自己的节日。\n\n去年717骑士节，我印象特别深。那天中午我像往常一样在商圈等单，站长突然打电话叫我去站点。到了之后，发现桌上摆满了红色礼盒，每个上面都印着"717骑士节"几个字。\n\n打开礼盒，里面有一个防暑降温包（藿香正气水+清凉油+湿巾）、一副定制冰袖（上面印着"美团骑士"）、还有一张手写感谢卡。卡片上写着："感谢你在烈日下的坚守，每一单都承载着我们的信任。"\n\n说实话，那一下真的有点破防。平时跑单，受委屈的时候多，被理解的时候少。有时候顾客一句"谢谢"都能让我开心半天，更别说收到这种节日礼物了。\n\n旁边有个老骑手，跑单5年了，他打开礼盒看了半天，跟我说："这是我第一次觉得，有人真的把我们当回事。"他说这话的时候，眼睛有点红。\n\n今年717骑士节，据说福利比去年还多。我提前打听了一下，除了常规的防暑礼包，还有积分翻倍活动、专属勋章、甚至还有"骑士家庭日"——可以带家人来站点参加聚餐。\n\n作为一个跑了2年单的骑手，我觉得骑士节的意义不只是在发礼物。它让我们知道，这个平台不只是把我们当成"配送工具"，而是真正认可我们的付出。\n\n所以717当天，不管你多忙，记得去站点看看。也许只是一个小小的礼盒，但里面装的是尊重。\n\n最后，提前祝所有骑手兄弟717节日快乐！你们辛苦了！\n\n你是哪一年开始跑单的？评论区说说你的骑士节回忆，点赞最高的3位送骑士节限定礼盒！',
+      cta: '717骑士节倒计时开始！评论区说出你的跑单年限，抽3位送骑士节限定装备礼盒！',
+      keywords: '717骑士节,骑手节日,美团骑士,骑手福利,节日活动',
+      hashtags: '#717骑士节 #美团骑士 #骑手节日 #致敬骑手 #骑士节倒计时'
+    }
+  }
+};
+
+// 通用内容（当话题不匹配任何关键词时）
+var GENERIC_CONTENT = {
+  titles: [
+    {title: '骑手装备｜看完沉默了，原来我一直做错了', type: '共鸣', score: 9.7},
+    {title: '骑手60天装备真实体验｜这3点没人告诉你', type: '测评', score: 9.5},
+    {title: '新手骑手装备怎么选？看这篇就够了，少走99%弯路', type: '指南', score: 9.3},
+    {title: '骑手装备避坑指南｜这5个雷区别踩，省下大几百', type: '避坑', score: 9.1},
+    {title: '业内人士揭秘：骑手装备的隐藏门道', type: '揭秘', score: 8.9},
+    {title: '骑手装备实测对比｜百元vs千元，差距到底在哪？', type: '对比', score: 8.7},
+    {title: '花了3个月试错，终于找到骑手装备最优解', type: '经验', score: 8.6},
+    {title: '骑手装备清单｜照着买不踩雷，老骑手都在用', type: '清单', score: 8.4}
+  ],
+  body: {
+    hook: '你是不是也遇到过这种情况？刚跑单的时候不懂装备，买了一堆没用的东西，钱花了还没效果。',
+    painPoints: '痛点1：装备选错浪费钱，贵的未必适合自己，便宜的又不耐用\n痛点2：不懂怎么搭配，买一堆装备却不会用，反而影响跑单效率\n痛点3：跟风买了网红款，结果发现根本不实用，骑半天就难受\n痛点4：不知道哪些装备是必须的，哪些是可有可无的',
+    solutions: '解决方案：\n① 新手优先配置：头盔+手机支架+餐箱+手套，这4样是刚需\n② 夏季加配：防晒面罩+冰袖+防晒衣，防晒比啥都重要\n③ 预算分配：头盔300-500元、手机支架30-60元、餐箱100-200元、手套20-50元\n④ 进阶配置：腰靠餐箱+导航设备+防水装备，提升跑单效率和舒适度',
+    fullText: '我刚开始跑单的时候，花了大几千买了一堆装备，结果发现很多根本用不上。今天给大家整理一份骑手装备清单，分新手版和进阶版，照着买不踩雷。\n\n【新手必配4件套】\n① 头盔：选3C认证+通风款，300-500元。这是保命的，不能省。\n② 手机支架：选防抖减震款，30-60元。导航不稳影响跑单效率。\n③ 餐箱：选保温款+腰靠设计，100-200元。保护腰部，还能保温。\n④ 手套：选硅胶减震+透气款，20-50元。保护双手，减少震动。\n\n【夏季加配3件套】\n① 防晒面罩：冰丝材质+UPF50+，20-40元。防晒是长期投资。\n② 冰袖：选黑色UPF50+款，10-30元。手臂防晒不能忽视。\n③ 防晒衣：轻薄透气款，50-100元。全身防晒，不闷汗。\n\n【进阶提升装备】\n① 腰靠餐箱：人体工学设计，150-300元。跑单一天腰不酸。\n② 导航设备：手机支架升级+蓝牙耳机，100-200元。导航更方便。\n③ 防水装备：雨衣+防水鞋套+手机防水袋，50-100元。雨天也能跑单。\n\n【预算参考】\n新手全套：500-800元（4件套+夏季3件套）\n进阶全套：1000-1500元（加上进阶装备）\n\n【购买建议】\n① 不要一次买齐，先买刚需，跑一段时间再根据需要补充\n② 优先买质量好的，便宜的用不久反而浪费钱\n③ 多看真实骑手评价，不要只看商家宣传\n\n最后提醒：装备不是越多越好，适合自己的才是最好的。我现在的装备就是头盔+支架+餐箱+手套+防晒三件套，跑单一天效率很高，身体也舒服。\n\n你平时用什么装备？评论区聊聊，我整理一份完整清单送给大家！',
+    cta: '你平时用什么装备？评论区聊聊，点赞最高的3位送装备清单！',
+    keywords: '骑手装备,新手装备,跑单装备,美团骑手,装备清单',
+    hashtags: '#骑手装备 #新手装备 #跑单装备 #美团骑手 #装备清单'
+  }
+};
+
+function matchContentByTopic(topic) {
+  var t = topic.toLowerCase();
+  for (var key in CONTENT_LIBRARY) {
+    var lib = CONTENT_LIBRARY[key];
+    for (var i = 0; i < lib.keywords.length; i++) {
+      if (t.indexOf(lib.keywords[i]) !== -1) {
+        return lib;
+      }
+    }
+  }
+  return GENERIC_CONTENT;
+}
+// ===== END SMART CONTENT LIBRARY =====
+var MOCK_DATA = {
+  xhsProfile: {"nickname": "美团装备研究所", "user_id": "63048899491", "ip_location": "北京", "bio": "探索不一样的骑手装备\\\\n认准唯一官号 其他均不是所长哦", "avatar": "https://example.com\\", "following": "8", "followers": "4.6万", "likes_collects": "5.4万", "notes": "81", "last_updated": "2026-07-15T10:00:04", "tags": ["骑手装备", "安全指南", "测评", "装备推荐"]},
+  xhsRank: {"items": [{"rank": 1, "title": "跑单时的神级操作", "heat": "14.7w", "tag": "热梗", "url": "https://www.xiaohongshu.com/search_result?keyword=跑单时的神级操作", "date": "2026-07-14"}, {"rank": 2, "title": "骑手与顾客的相爱相杀", "heat": "10.6w", "tag": "热梗", "url": "https://www.xiaohongshu.com/search_result?keyword=骑手与顾客的相爱相杀", "date": "2026-07-14"}, {"rank": 3, "title": "骑手搞笑对话实录", "heat": "10.4w", "tag": "热梗", "url": "https://www.xiaohongshu.com/search_result?keyword=骑手搞笑对话实录", "date": "2026-07-14"}, {"rank": 4, "title": "骑手防晒装备真实测评", "heat": "9.5w", "tag": "热点", "url": "https://www.xiaohongshu.com/search_result?keyword=骑手防晒装备真实测评", "date": "2026-07-14"}, {"rank": 5, "title": "适合跑单听的电子音乐", "heat": "7.0w", "tag": "BGM", "url": "https://www.xiaohongshu.com/search_result?keyword=适合跑单听的电子音乐", "date": "2026-07-14"}, {"rank": 6, "title": "夜间跑单照明装备", "heat": "6.0w", "tag": "热点", "url": "https://www.xiaohongshu.com/search_result?keyword=夜间跑单照明装备", "date": "2026-07-14"}, {"rank": 7, "title": "骑手解压歌单分享", "heat": "5.8w", "tag": "BGM", "url": "https://www.xiaohongshu.com/search_result?keyword=骑手解压歌单分享", "date": "2026-07-14"}, {"rank": 8, "title": "骑手夏日装备红黑榜", "heat": "5.7w", "tag": "热点", "url": "https://www.xiaohongshu.com/search_result?keyword=骑手夏日装备红黑榜", "date": "2026-07-14"}, {"rank": 9, "title": "骑手头盔选购全攻略", "heat": "5.6w", "tag": "热点", "url": "https://www.xiaohongshu.com/search_result?keyword=骑手头盔选购全攻略", "date": "2026-07-14"}, {"rank": 10, "title": "骑手提神醒脑歌单", "heat": "4.3w", "tag": "BGM", "url": "https://www.xiaohongshu.com/search_result?keyword=骑手提神醒脑歌单", "date": "2026-07-14"}], "last_updated": "2026-07-15 10:00:00", "date": "2026-07-14", "total": 10},
+  xhsTopics: {"topics": [{"id": 1, "title": "夏季骑行腰靠餐箱选购攻略", "tag": "#腰靠餐箱", "product": "腰靠餐箱", "heat": 9644, "category": "攻略", "reason": "夏季骑手腰靠餐箱攻略，实用干货+互动拉满"}, {"id": 2, "title": "夏季骑手面罩清单，少走弯路", "tag": "#面罩", "product": "面罩", "heat": 9289, "category": "清单", "reason": "夏季骑手面罩清单，实用干货+互动拉满"}, {"id": 3, "title": "骑手手机支架日常｜日常送单实录", "tag": "#手机支架", "product": "手机支架", "heat": 7561, "category": "日常", "reason": "夏季骑手手机支架日常，实用干货+互动拉满"}, {"id": 4, "title": "新手骑手面罩怎么选？看这篇就够了", "tag": "#面罩", "product": "面罩", "heat": 7079, "category": "新人指南", "reason": "夏季骑手面罩新人指南，实用干货+互动拉满"}, {"id": 5, "title": "通风头盔真实测评｜骑手60天使用体验", "tag": "#通风头盔", "product": "通风头盔", "heat": 6343, "category": "测评", "reason": "夏季骑手通风头盔测评，实用干货+互动拉满"}, {"id": 6, "title": "防晒衣搭配公式｜夜间场景全覆盖", "tag": "#防晒衣", "product": "防晒衣", "heat": 6291, "category": "搭配", "reason": "夏季骑手防晒衣搭配，实用干货+互动拉满"}, {"id": 7, "title": "透气T恤对比｜2款热门产品怎么选", "tag": "#透气T恤", "product": "透气T恤", "heat": 5264, "category": "对比", "reason": "夏季骑手透气T恤对比，实用干货+互动拉满"}, {"id": 8, "title": "导航设备开箱｜大容量真的好用吗？", "tag": "#导航设备", "product": "导航设备", "heat": 3478, "category": "开箱", "reason": "夏季骑手导航设备开箱，实用干货+互动拉满"}, {"id": 9, "title": "新人骑手腰靠餐箱避坑，第3款真香", "tag": "#腰靠餐箱", "product": "腰靠餐箱", "heat": 3461, "category": "避坑", "reason": "夏季骑手腰靠餐箱避坑，实用干货+互动拉满"}, {"id": 10, "title": "通风头盔穿搭｜工装风骑手也能很潮", "tag": "#通风头盔", "product": "通风头盔", "heat": 3119, "category": "穿搭", "reason": "夏季骑手通风头盔穿搭，实用干货+互动拉满"}], "last_updated": "2026-07-15 15:49:24", "source": "ai", "total": 10},
+  xhsTrend: { hours: ["17:20", "19:20", "21:20", "23:20", "01:20", "03:20", "05:20", "07:20", "09:20", "11:20", "13:20", "15:20"], values: [3200, 2800, 2100, 3800, 5200, 6100, 5800, 6500, 7200, 6800, 7856, 5400], peak: 7856 },
+  generatedTitles: [],
+  generatedBody: {}
+};
+
+// ===== API 后端地址配置 =====
+// 支持通过 localStorage 覆盖后端地址（部署到服务器时设置）
+// 示例：localStorage.setItem('API_BASE_URL', 'https://your-server.com')
+var API_BASE_URL = localStorage.getItem('API_BASE_URL') || 'http://localhost:8081';
+console.log('[API] 后端地址:', API_BASE_URL);
+
+// Mock fetch for standalone mode
+var _originalFetch = window.fetch;
+window.fetch = function(url, options) {
+  var urlStr = typeof url === 'string' ? url : (url && url.href ? url.href : String(url));
+  var pathname = urlStr;
+  if (urlStr.indexOf('http') === 0) {
+    try { pathname = new URL(urlStr).pathname; } catch(e) {}
+  }
+  if (pathname.startsWith('/api/') || pathname.startsWith('/static/images/generated/')) {
+    return new Promise(function(resolve) {
+      setTimeout(function() {
+        var data = {};
+        var pathname = url;
+        if (typeof url === 'string' && url.indexOf('http') === 0) {
+          try { pathname = new URL(url).pathname; } catch(e) {}
+        }
+        if (pathname === '/api/xhs-profile') data = MOCK_DATA.xhsProfile;
+        else if (pathname === '/api/xhs-trend') data = MOCK_DATA.xhsTrend;
+        else if (pathname === '/api/xhs-rank') data = MOCK_DATA.xhsRank;
+        else if (pathname === '/api/xhs-topics') data = MOCK_DATA.xhsTopics;
+        else if (pathname === '/api/xhs-topics/update') data = {status: 'started', msg: '话题已更新'};
+        else if (pathname === '/api/xhs-rank/update') data = {status: 'started', msg: '榜单已更新'};
+        else if (pathname.startsWith('/api/generate-material')) {
+          // 转发到美境独立代理服务器
+          return _originalFetch.call(this, API_BASE_URL + pathname, options)
+            .catch(function(e) {
+              // 代理未启动，返回友好提示
+              return Promise.resolve({
+                ok: true,
+                status: 200,
+                json: function() {
+                  return Promise.resolve({
+                    status: 'failed',
+                    error: '美境代理服务未启动，请在 standalone 目录下运行：python proxy_server.py'
+                  });
+                }
+              });
+            });
+        }
+        else if (pathname.startsWith('/static/images/generated/')) {
+          // 转发生成的图片到代理服务器
+          return _originalFetch.call(this, API_BASE_URL + pathname, options)
+            .catch(function(e) {
+              return Promise.resolve({
+                ok: false, status: 404,
+                blob: function() { return Promise.resolve(new Blob()); }
+              });
+            });
+        }
+        else if (pathname === '/api/ai-generate-titles') {
+          var reqBody = options && options.body ? JSON.parse(options.body) : {};
+          var topic = reqBody.topic || '骑手装备';
+          var match = matchContentByTopic(topic);
+          data = {
+            titles: match.titles,
+            topic: topic, count: match.titles.length, source: 'smart'
+          };
+        }
+        else if (pathname === '/api/ai-generate-body') {
+          var reqBody = options && options.body ? JSON.parse(options.body) : {};
+          var title = reqBody.title || '未命名标题';
+          var topic = reqBody.topic || '骑手装备';
+          var type = reqBody.type || '经验';
+          var match = matchContentByTopic(topic);
+          var b = match.body;
+          data = {
+            body: {
+              hook: b.hook,
+              pain_points: b.painPoints,
+              solutions: b.solutions,
+              cta: b.cta,
+              full_text: b.fullText,
+              keywords: b.keywords + ',' + topic,
+              hashtags: b.hashtags
+            },
+            title: title, topic: topic, type: type, source: 'smart'
+          };
+        }
+        resolve({
+          ok: true,
+          status: 200,
+          json: function() { return Promise.resolve(data); }
+        });
+      }, 300);
+    });
+  }
+  return _originalFetch.apply(this, arguments);
+};
+// ===== END MOCK DATA =====
+</script>\n<script>
+function updateInputCount() { document.getElementById('input-count').textContent = document.getElementById('topic-input').value.length; }
+function generatePack() { alert('一键生成内容包'); }
+function showAngles() { alert('生成话题角度'); }
+function riskCheck() { alert('风险检查'); }
+
+// ===== 物料素材制作 =====
+var matUploadedFiles = [];
+var matDescEdited = false;
+var MAX_IMAGES = 5;
+
+function renderMaterialThumbs() {
+  var container = document.getElementById('mat-upload-thumbs');
+  if (!container) return;
+  container.innerHTML = '';
+  matUploadedFiles.forEach(function(item, idx) {
+    var div = document.createElement('div');
+    div.className = 'material-thumb';
+    div.innerHTML = '<img src="' + item.dataUrl + '" alt="" /><span class="material-thumb-remove" onclick="removeMaterialThumb(' + idx + ')">✕</span>';
+    container.appendChild(div);
+  });
+  var uploadArea = document.getElementById('mat-upload-area');
+  if (uploadArea) {
+    uploadArea.style.display = matUploadedFiles.length >= MAX_IMAGES ? 'none' : 'flex';
+  }
+}
+
+function onMaterialUpload(input) {
+  if (!input.files || input.files.length === 0) return;
+  var remaining = MAX_IMAGES - matUploadedFiles.length;
+  if (remaining <= 0) { alert('最多上传' + MAX_IMAGES + '张图片'); return; }
+  
+  var filesToAdd = Math.min(input.files.length, remaining);
+  var processed = 0;
+  
+  for (var i = 0; i < filesToAdd; i++) {
+    (function(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        matUploadedFiles.push({ file: file, dataUrl: e.target.result });
+        processed++;
+        if (processed === filesToAdd) {
+          renderMaterialThumbs();
+          autoGenDesc();
+        }
+      };
+      reader.readAsDataURL(file);
+    })(input.files[i]);
+  }
+  input.value = '';
+}
+
+function removeMaterialThumb(index) {
+  if (index >= 0 && index < matUploadedFiles.length) {
+    matUploadedFiles.splice(index, 1);
+    renderMaterialThumbs();
+    autoGenDesc();
+  }
+}
+
+function onDescEdit() {
+  matDescEdited = true;
+}
+
+function autoGenDesc() {
+  matDescEdited = false;
+  var width = document.getElementById('mat-width').value.trim();
+  var height = document.getElementById('mat-height').value.trim();
+  var title = document.getElementById('mat-title').value.trim();
+  var subtitle = document.getElementById('mat-subtitle').value.trim();
+  var style = document.getElementById('mat-style').value.trim();
+  var imageCount = matUploadedFiles.length;
+  
+  if (!title && !subtitle && !style && imageCount === 0) {
+    document.getElementById('mat-desc').value = '';
+    return;
+  }
+  
+  var parts = [];
+  parts.push('生成一张小红书竖版海报');
+  if (style) parts.push('，风格为' + style);
+  if (width && height) parts.push('，尺寸' + width + 'x' + height + 'px');
+  if (title) parts.push('。画面主标题文字为"' + title + '"，需突出醒目排版');
+  if (subtitle) parts.push('，副标题为"' + subtitle + '"，作为辅助说明文字');
+  if (imageCount > 0) {
+    if (imageCount === 1) {
+      parts.push('。参考上传的图片素材进行创作，保持素材主体特征');
+    } else {
+      parts.push('。参考上传的' + imageCount + '张图片素材进行创作，融合各素材主体特征');
+    }
+  }
+  if (style) {
+    if (style.indexOf('国漫') >= 0 || style.indexOf('动漫') >= 0) {
+      parts.push('，采用' + style + '的线条和配色，人物形象生动有张力');
+    } else if (style.indexOf('插画') >= 0) {
+      parts.push('，手绘插画质感，色彩柔和层次丰富');
+    } else if (style.indexOf('写实') >= 0) {
+      parts.push('，写实风格，光影细腻质感真实');
+    } else if (style.indexOf('扁平') >= 0) {
+      parts.push('，扁平化设计，几何构图色彩明快');
+    } else if (style.indexOf('3D') >= 0) {
+      parts.push('，3D渲染质感，立体感强材质逼真');
+    }
+  }
+  parts.push('。整体构图饱满不留白，适合小红书信息流展示，文字清晰可读');
+  
+  document.getElementById('mat-desc').value = parts.join('');
+}
+
+function generateMaterial() {
+  var desc = document.getElementById('mat-desc').value.trim();
+  
+  if (!desc) {
+    autoGenDesc();
+    desc = document.getElementById('mat-desc').value.trim();
+    if (!desc) { alert('请先填写素材信息并生成描述'); return; }
+  }
+  
+  // Reset preview
+  var img = document.getElementById('material-result-img');
+  var btn = document.getElementById('material-download-btn');
+  var placeholder = document.getElementById('mat-placeholder');
+  var loading = document.getElementById('mat-loading');
+  if (img) { img.style.display = 'none'; img.src = ''; }
+  if (btn) btn.style.display = 'none';
+  if (placeholder) placeholder.style.display = 'none';
+  if (loading) loading.style.display = 'flex';
+  
+  var formData = new FormData();
+  formData.append('prompt', desc);
+  matUploadedFiles.forEach(function(item) {
+    formData.append('image', item.file);
+  });
+  
+  fetch('/api/generate-material', { method: 'POST', body: formData })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) {
+        if (loading) loading.style.display = 'none';
+        if (placeholder) {
+          placeholder.innerHTML = '<i class="fas fa-exclamation-circle" style="font-size:24px;color:#ff4d4f;"></i><span style="font-size:11px;color:#999;">' + escapeHtml(d.error) + '</span>';
+          placeholder.style.display = 'flex';
+        }
+        return;
+      }
+      if (d.task_id) {
+        pollMaterialStatus(d.task_id);
+      }
+    })
+    .catch(function(e) {
+      console.error('Material generation failed', e);
+      if (loading) loading.style.display = 'none';
+      if (placeholder) {
+        placeholder.innerHTML = '<i class="fas fa-image" style="font-size:24px;color:#ddd;"></i><span style="font-size:11px;color:#bbb;">生成失败，请重试</span>';
+        placeholder.style.display = 'flex';
+      }
+    });
+}
+
+function pollMaterialStatus(taskId) {
+  var pollCount = 0;
+  var maxPoll = 300; // 最多轮询300次（约10分钟）
+  var loading = document.getElementById('mat-loading');
+  var loadingText = loading ? loading.querySelector('span') : null;
+  
+  function doPoll() {
+    pollCount++;
+    if (pollCount > maxPoll) {
+      if (loading) loading.style.display = 'none';
+      alert('生成超时，请前往 https://aidesign.meituan.com/ 查看');
+      return;
+    }
+    
+    // 更新加载提示，显示已等待时间
+    var elapsed = Math.round(pollCount * 2);
+    if (loadingText) {
+      loadingText.textContent = '美境AI设计师生成中... 已等待 ' + elapsed + ' 秒';
+    }
+    
+    fetch('/api/generate-material/status/' + taskId)
+      .then(function(r) { return r.json(); })
+      .then(function(status) {
+        if (status.status === 'done' && status.url) {
+          if (loading) loading.style.display = 'none';
+          var img = document.getElementById('material-result-img');
+          var btn = document.getElementById('material-download-btn');
+          if (img) { img.src = status.url; img.style.display = 'block'; }
+          if (btn) { btn.setAttribute('data-url', status.url); btn.style.display = 'inline-flex'; }
+        } else if (status.status === 'failed') {
+          if (loading) loading.style.display = 'none';
+          var placeholder = document.getElementById('mat-placeholder');
+          if (placeholder) {
+            placeholder.innerHTML = '<i class="fas fa-exclamation-circle" style="font-size:24px;color:#ff4d4f;"></i><span style="font-size:11px;color:#999;">' + escapeHtml(status.error || '生成失败') + '</span>';
+            placeholder.style.display = 'flex';
+          }
+        } else {
+          // 仍在生成中，继续轮询
+          setTimeout(doPoll, 2000);
+        }
+      })
+      .catch(function(e) {
+        console.error('Poll failed', e);
+        setTimeout(doPoll, 2000);
+      });
+  }
+  
+  doPoll();
+}
+
+function downloadMaterial() {
+  var url = document.getElementById('material-download-btn').getAttribute('data-url');
+  console.log('Download clicked, URL:', url);
+  if (!url) { alert('图片地址为空'); return; }
+  
+  // Try modern File System Access API to let user choose save location
+  if (window.showSaveFilePicker) {
+    console.log('Using showSaveFilePicker API');
+    fetch(url)
+      .then(function(r) { return r.blob(); })
+      .then(async function(blob) {
+        try {
+          var ext = url.split('.').pop().split('?')[0] || 'png';
+          var handle = await window.showSaveFilePicker({
+            suggestedName: 'material.' + ext,
+            types: [{ accept: { 'image/*': ['.' + ext] } }]
+          });
+          var writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          console.log('Save dialog completed');
+        } catch (err) {
+          console.log('Save dialog error:', err.name, err.message);
+          if (err.name !== 'AbortError') {
+            console.error('Save failed', err);
+            fallbackDownload(url);
+          }
+        }
+      })
+      .catch(function(e) {
+        console.error('Fetch failed', e);
+        fallbackDownload(url);
+      });
+  } else {
+    console.log('showSaveFilePicker not available, using fallback');
+    fallbackDownload(url);
+  }
+}
+
+function fallbackDownload(url) {
+  // Fetch image as blob, create object URL, then trigger download
+  // This is more reliable than direct URL because blob URLs are always same-origin
+  fetch(url)
+    .then(function(r) { return r.blob(); })
+    .then(function(blob) {
+      var blobUrl = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = 'material.png';
+      a.style.cssText = 'position:fixed; top:-9999px; left:-9999px; opacity:0;';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() {
+        URL.revokeObjectURL(blobUrl);
+        if (a.parentNode) document.body.removeChild(a);
+      }, 100);
+    })
+    .catch(function(e) {
+      console.error('Download failed', e);
+      window.open(url, '_blank');
+    });
+}
+
+// ===== AI 内容生成 =====
+var currentTopic = '';
+var selectedTitle = null;
+var selectedTitleType = '';
+var selectedTitleIndex = -1;
+
+function updateInputCount() {
+  var el = document.getElementById('topic-input');
+  var count = el ? el.value.length : 0;
+  var countEl = document.getElementById('input-count');
+  if (countEl) countEl.textContent = count;
+}
+
+function clearContentGen() {
+  document.getElementById('topic-input').value = '';
+  updateInputCount();
+  document.getElementById('title-list').innerHTML = '<li class="title-item" onclick="selectTitle(this, 0)" data-title="" data-type=""><span class="title-num hot">1</span><span class="title-text">输入话题后生成标题</span></li>';
+  var mascotArea = document.getElementById('mascot-area');
+  if (mascotArea) mascotArea.style.display = 'flex';
+  document.getElementById('analysis-focus').querySelector('.analysis-body').textContent = '输入话题方向后，AI 将围绕该话题提炼核心看点：读者最感兴趣的痛点、最想要的功能点、最关心的场景对比。例如「骑手的一天」话题，关注点可能集中在：日常装备真实体验、高强度工作下的装备选择、与同行交流的心得等。这些看点将决定正文的切入角度和内容权重。';
+  document.getElementById('analysis-scene').querySelector('.analysis-body').textContent = '选择标题后，AI 将以「所长」第一人称视角构建真实骑手生活场景：等红灯时暴晒、爬楼梯赶时间、深夜收工的疲惫、被同行搭话的趣味瞬间。场景有画面感、有细节、有情绪共鸣，让读者仿佛身临其境。不是广告话术，而是真实骑手日常。';
+  document.getElementById('analysis-interaction').querySelector('.analysis-body').textContent = '正文生成后，AI 会设计一个自然有趣的评论区互动话题：可以是投票（"你们觉得NFC开锁实用还是噱头？"）、提问（"夏天跑单你们最怕什么？我先说——等红灯暴晒"）、晒物（"评论区交作业：你的箱子用了多久了？还活着吗？"）。互动设计的目标是提升评论率，而非生硬求赞。';
+  document.getElementById('full-text-preview').innerHTML = '<div style="font-size:10px; color:#999; margin-bottom:6px; text-align:center;">📌 示例预览（选择标题并生成正文后，此处将显示实际内容）</div><div style="font-weight:500; color:#333; margin-bottom:6px; font-size:12px;">骑手的一天｜看完沉默了</div><div>早上六点半出门，我还觉得今天挺凉快的。结果中午爬了六楼送餐，后背全湿透了。等红灯的时候太阳直射，脖子火辣辣的，以前穿棉T恤黏在身上那个难受啊。</div><div style="margin-top:6px;">说的是真实经历。那次印象挺深——是去年七月最热的一个周五，我在朝阳区跑午高峰。系统连续派了三个六楼的单子，最后一单是老旧小区，没有电梯。我拎着两大袋奶茶往上爬，楼道里又闷又窄，还飘着一股消毒水味。爬到四楼的时候腿已经软了，扶着栏杆喘口气，听见楼上住户在喊"外卖到了吗"，我只能咬牙继续往上冲。</div><div style="margin-top:6px;">好不容易送到，开门的是个小姑娘，接过奶茶说了声"谢谢叔叔"就关门了。我站在楼道里愣了两秒，低头看看自己，衣服湿得能拧出水，裤脚还沾着泥点。那一下突然觉得挺心酸的，但紧接着系统又弹出新单子，只好转身下楼继续跑。</div><div style="margin-top:6px;">今天试了新到的速干衣，仿棉面料摸着像普通T恤，但汗湿后背居然不会黏！同样是爬六楼，送完午高峰回家，衣服已经干了，也没啥汗味。最惊喜的是腋下和后背的网眼设计，以前闷出一身汗的感觉明显少了。</div><div style="margin-top:6px;">下午在国贸附近等红灯，被三个同行问衣服哪买的，我说装备研究所的，他们表情就跟我免费送的一样😂其中一个兄弟还非要摸一下面料，说"这不就是普通T恤吗？"我说你穿一天就知道了。</div><div style="margin-top:6px;">傍晚收工路过便利店，店员看我衣服没湿透，问我是不是今天单子少。我说单子没少，是衣服换对了。她听完掏出手机记了名字，说给她老公也整一件——她老公也是跑众包的。</div><div style="margin-top:6px;">凌晨收工的时候算了算，以前一个月光T恤就得洗坏两三件，现在这件速干衣洗了十几次了，版型还在，也没起球。以前跑单一天换两件T恤，今天一件就搞定了。</div><div style="margin-top:6px; font-weight:500; color:#333;">你们夏天跑单最怕什么？我先说——老旧小区没电梯的六楼。评论区说说你们的崩溃瞬间！</div>';
+  document.getElementById('btn-gen-body').disabled = true;
+  document.getElementById('btn-submit').disabled = true;
+  selectedTitle = null;
+  selectedTitleType = '';
+  selectedTitleIndex = -1;
+}
+
+function aiGenerateTitles() {
+  var topic = document.getElementById('topic-input').value.trim();
+  if (!topic) { alert('请先输入话题方向'); return; }
+  currentTopic = topic;
+  var btn = document.getElementById('btn-gen-titles');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI 生成中...';
+  
+  fetch('/api/ai-generate-titles', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({topic: topic})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> AI 生成标题';
+    if (d.error) { alert(d.error); return; }
+    
+    var list = document.getElementById('title-list');
+    var html = '';
+d.titles.forEach(function(t, idx){
+var numClass = idx < 3 ? 'title-num hot' : 'title-num';
+html += '<li class="title-item" onclick="selectTitle(this, ' + idx + ')" data-title="' + escapeHtml(t.title) + '" data-type="' + escapeHtml(t.type || '') + '">' +
+'<span class="' + numClass + '">' + (idx + 1) + '</span>' +
+        '<span class="title-text">' + escapeHtml(t.title) + '</span>' +
+        '<span class="title-tag-inline">' + escapeHtml(t.type || '') + '</span>' +
+      '</li>';
+    });
+list.innerHTML = html;
+
+// 隐藏装饰图片，给标题列表腾出空间
+var mascotArea = document.getElementById('mascot-area');
+if (mascotArea) mascotArea.style.display = 'none';
+
+// 默认选中第一个
+    if (d.titles.length > 0) {
+      selectTitle(list.children[0], 0);
+    }
+  })
+  .catch(function(e){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> AI 生成标题';
+    alert('生成失败：' + e.message);
+  });
+}
+
+function selectTitle(el, idx) {
+  var items = document.querySelectorAll('#title-list .title-item');
+  items.forEach(function(item){ item.classList.remove('selected'); });
+  el.classList.add('selected');
+  selectedTitle = el.getAttribute('data-title');
+  selectedTitleType = el.getAttribute('data-type') || '';
+  selectedTitleIndex = idx;
+  document.getElementById('btn-gen-body').disabled = false;
+  document.getElementById('btn-submit').disabled = true;
+}
+
+function aiGenerateBody() {
+  if (!selectedTitle) { alert('请先选择标题'); return; }
+  var btn = document.getElementById('btn-gen-body');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
+  
+  document.getElementById('analysis-focus').querySelector('.analysis-body').textContent = 'AI 正在分析内容关注点…';
+  document.getElementById('analysis-scene').querySelector('.analysis-body').textContent = 'AI 正在构建第一视角场景…';
+  document.getElementById('analysis-interaction').querySelector('.analysis-body').textContent = 'AI 正在设计结尾互动…';
+  document.getElementById('full-text-preview').textContent = 'AI 正在创作完整正文，请稍候…';
+  
+  fetch('/api/ai-generate-body', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({title: selectedTitle, topic: currentTopic, type: selectedTitleType})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paragraph"></i> 生成正文';
+    if (d.error) { alert(d.error); return; }
+    
+    var body = d.body;
+// 内容分析区域
+document.getElementById('analysis-focus').querySelector('.analysis-body').textContent = body.hook || '（未生成）';
+document.getElementById('analysis-scene').querySelector('.analysis-body').textContent = body.pain_points || '（未生成）';
+document.getElementById('analysis-interaction').querySelector('.analysis-body').textContent = body.cta || '（未生成）';
+    
+    // 完整正文
+    document.getElementById('full-text-preview').textContent = body.full_text || '（未生成完整正文）';
+    
+    // 记录到历史生成记录
+    var now = new Date();
+    var timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    worksetRecords.unshift({
+      title: selectedTitle,
+      time: timeStr,
+      date: now.toLocaleDateString('zh-CN', {month:'numeric', day:'numeric'})
+    });
+    if (worksetRecords.length > 10) worksetRecords.pop();
+    renderWorkset();
+    saveWorkset();
+    
+    document.getElementById('btn-submit').disabled = false;
+  })
+  .catch(function(e){
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paragraph"></i> 生成正文';
+    alert('生成失败：' + e.message);
+  });
+}
+
+// 工作集记录（最多10条）
+var worksetRecords = [];
+
+function saveWorkset() {
+  localStorage.setItem('meituan_workset', JSON.stringify(worksetRecords));
+}
+function loadWorkset() {
+  var saved = localStorage.getItem('meituan_workset');
+  if (saved) {
+    try { worksetRecords = JSON.parse(saved); } catch(e) { worksetRecords = []; }
+    renderWorkset();
+  }
+}
+
+function renderWorkset() {
+  var list = document.getElementById('workset-list');
+  if (!list) return;
+  if (worksetRecords.length === 0) {
+    list.innerHTML = '<li class="recent-item" style="justify-content:center; color:#999; font-size:11px;">暂无生成记录，生成内容后自动记录</li>';
+    return;
+  }
+  var html = '';
+  var display = worksetRecords.slice(0, 3);
+  display.forEach(function(rec) {
+    html += '<li class="recent-item">' +
+      '<div class="recent-icon" style="color:#52c41a;"><i class="fas fa-check-circle"></i></div>' +
+      '<div class="recent-info"><div class="recent-title">' + escapeHtml(rec.title) + '</div><div class="recent-meta">' + rec.time + '</div></div>' +
+      '<span class="recent-status" style="background:#f6ffed; color:#52c41a;">已生成</span>' +
+    '</li>';
+  });
+  list.innerHTML = html;
+}
+
+function submitReview() {
+  var a = document.createElement('a');
+  a.href = 'https://fxgl365.com/account/operate/audit-content';
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.style.cssText = 'position:fixed; top:-9999px; left:-9999px; opacity:0;';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function showWorksetMore() {
+  if (worksetRecords.length === 0) {
+    alert('暂无生成记录');
+    return;
+  }
+  var html = '<div style="font-size:13px; line-height:1.8; padding:10px 0;">';
+  html += '<div style="font-weight:700; margin-bottom:8px; font-size:14px;">📂 历史生成记录（近10条）</div>';
+  worksetRecords.forEach(function(rec, idx) {
+    html += '<div style="display:flex; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid #f0f0f0;">';
+    html += '<span style="width:18px; text-align:center; font-weight:700; color:' + (idx < 3 ? '#52c41a' : '#999') + '">' + (idx + 1) + '</span>';
+    html += '<span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(rec.title) + '</span>';
+    html += '<span style="color:#999; font-size:11px; flex-shrink:0;">' + rec.time + '</span>';
+    html += '<span style="font-size:10px; padding:1px 5px; border-radius:3px; color:#52c41a; background:#f6ffed;">已生成</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; display:flex; align-items:center; justify-content:center;';
+  modal.innerHTML = '<div style="background:#fff; border-radius:8px; padding:16px; width:460px; max-width:90%; max-height:80%; overflow-y:auto; box-shadow:0 4px 20px rgba(0,0,0,0.2);">' + html + '<div style="text-align:center; margin-top:12px;"><button onclick="this.closest(\'.card-modal\').parentElement.remove()" style="border:none; background:#f5f5f5; padding:6px 20px; border-radius:4px; cursor:pointer; font-size:12px;">关闭</button></div></div>';
+  modal.className = 'card-modal';
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+  document.body.appendChild(modal);
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  var div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+function useTemplate(name) { alert('使用模板: ' + name); }
+
+function initTrendChart() {
+  const el = document.getElementById('trend-chart');
+  if (!el || typeof echarts === 'undefined') return;
+  const chart = echarts.init(el);
+  
+  // 默认占位数据 —— 每2小时一个点，24小时完整覆盖
+  var defaultHours = ['00:00','02:00','04:00','06:00','08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00'];
+  var defaultData = [3200, 2800, 2100, 3800, 5200, 6100, 5800, 6500, 7200, 6800, 7856, 5400];
+  var hours = defaultHours.slice();
+  var data = defaultData.slice();
+  var peak = 7856;
+  
+  function renderChart() {
+    chart.setOption({
+      grid: { left:36, right:10, top:14, bottom:18 },
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(255,255,255,0.95)',
+        borderColor: '#eee',
+        borderWidth: 1,
+        textStyle: { color: '#333', fontSize: 11 },
+        formatter: function(params) {
+          var p = params[0];
+          return '<div style="font-weight:700;color:#333">' + p.name + '</div><div style="color:#ffc800;font-weight:600">热度: ' + p.value.toLocaleString() + '</div>';
+        }
+      },
+      xAxis: {
+        type: 'category',
+        data: hours,
+        boundaryGap: false,
+        axisLine: { lineStyle: { color: '#eee' } },
+        axisLabel: { color: '#999', fontSize: 8, interval: 1, rotate: 0 },
+        axisTick: { show: true, alignWithLabel: true, lineStyle: { color: '#eee' } },
+        splitLine: { show: false }
+      },
+      yAxis: {
+        type: 'value',
+        min: 0,
+        max: function(value) { return Math.ceil(Math.max(value.max * 1.2, 8000) / 1000) * 1000; },
+        interval: function(value) { return Math.ceil((value.max - value.min) / 5 / 1000) * 1000; },
+        show: true,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: '#999', fontSize: 8, formatter: function(v) { return v >= 1000 ? (v / 1000) + 'k' : v; } },
+        splitLine: { lineStyle: { color: '#f0f0f0' } }
+      },
+      series: [{
+        data: data,
+        type: 'line',
+        smooth: 0.4,
+        symbol: 'circle',
+        symbolSize: 5,
+        showSymbol: false,
+        itemStyle: { color: '#ffc800', borderColor: '#fff', borderWidth: 2 },
+        lineStyle: { color: '#ffc800', width: 2.5 },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(255,200,0,0.25)' },
+            { offset: 1, color: 'rgba(255,200,0,0.03)' }
+          ])
+        },
+        markPoint: {
+          data: [{ type: 'max', name: '峰值', label: { color: '#fff', fontSize: 9, formatter: '{c}' }, itemStyle: { color: '#ff7a45' }, symbolSize: 30 }]
+        }
+      }]
+    });
+    setTimeout(function(){ chart.resize(); }, 200);
+  }
+  
+  // 先渲染占位数据，避免空白
+  renderChart();
+  
+  // 从 API 获取真实趋势数据（仅用于更新峰值，保留默认的12点固定时间数据）
+  fetch('/api/xhs-trend')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || d.error || !d.values || d.values.length === 0) return;
+      // 使用 API 数据更新峰值和指标，但保留固定时间标签
+      var apiPeak = d.peak || Math.max.apply(Math, d.values);
+      peak = apiPeak > peak ? apiPeak : peak;
+      // 更新峰值显示
+      var peakEl = document.querySelector('.peak-value');
+      if (peakEl) peakEl.textContent = peak.toLocaleString();
+      // 更新指标表格
+      var apiValues = d.values;
+      var avg = Math.round(apiValues.reduce(function(a,b){return a+b;},0) / apiValues.length);
+      var min = Math.min.apply(Math, apiValues);
+      var cur = apiValues[apiValues.length-1];
+      var metrics = document.getElementById('trend-metrics');
+      if (metrics) {
+        metrics.children[0].querySelector('.metric-value').textContent = peak.toLocaleString();
+        metrics.children[1].querySelector('.metric-value').textContent = avg.toLocaleString();
+        metrics.children[2].querySelector('.metric-value').textContent = min.toLocaleString();
+        metrics.children[3].querySelector('.metric-value').textContent = cur.toLocaleString();
+      }
+      renderChart();
+    })
+    .catch(function(e){ console.error('Trend data load failed', e); });
+}
+initTrendChart();
+
+// 加载小红书账号数据
+function loadXhsProfile() {
+  fetch('/api/xhs-profile')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || d.error) return;
+      var avatar = document.getElementById('xhs-avatar');
+      if (avatar) avatar.src = (d.avatar && d.avatar !== 'https://example.com\\') ? d.avatar : './images/logo.png';
+      var nameEl = document.getElementById('xhs-name');
+      if (nameEl && d.nickname) nameEl.textContent = d.nickname;
+      var idEl = document.getElementById('xhs-id');
+      if (idEl && d.user_id) idEl.textContent = '小红书号：' + d.user_id;
+      var bioEl = document.getElementById('xhs-bio');
+      if (bioEl && d.bio) bioEl.textContent = d.bio;
+      var tagsEl = document.getElementById('xhs-tags');
+      if (tagsEl && d.tags && d.tags.length) {
+        tagsEl.innerHTML = d.tags.map(function(t){ return '<span class="xhs-tag">' + t + '</span>'; }).join('');
+      }
+      var followersEl = document.getElementById('xhs-followers');
+      if (followersEl && d.followers) followersEl.textContent = d.followers;
+      var likesEl = document.getElementById('xhs-likes');
+      if (likesEl && d.likes_collects) likesEl.textContent = d.likes_collects;
+      var notesEl = document.getElementById('xhs-notes');
+      if (notesEl && d.notes) notesEl.textContent = d.notes;
+      var updatedEl = document.getElementById('xhs-updated');
+      if (updatedEl && d.last_updated) updatedEl.textContent = '更新时间：' + d.last_updated;
+      if (updatedEl && d.next_update) updatedEl.textContent += '  ·  下次更新：' + d.next_update;
+    })
+    .catch(function(e){ console.error('XHS profile load failed', e); });
+}
+loadXhsProfile();
+
+// 加载小红书热点榜单（Top10：热梗/热点/BGM）
+function loadHotRank() {
+  var listEl = document.getElementById('rank-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<li class="rank-item" style="justify-content:center;color:#999;font-size:12px;">加载中...</li>';
+  
+  fetch('/api/xhs-rank')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.items || d.items.length === 0) {
+        listEl.innerHTML = '<li class="rank-item" style="justify-content:center;color:#999;font-size:12px;">暂无数据</li>';
+        return;
+      }
+      var html = '';
+      d.items.forEach(function(item){
+        var rankClass = item.rank <= 3 ? 'rank-num hot' : (item.rank <= 5 ? 'rank-num warm' : 'rank-num normal');
+        var tagClass = item.tag === '热梗' ? 'tag tag-danger' : (item.tag === 'BGM' ? 'tag tag-warn' : 'tag tag-success');
+        html += '<li class="rank-item" style="cursor:pointer;" data-url="' + (item.url || '') + '" onclick="jumpToXhs(this)">' +
+          '<span class="' + rankClass + '">' + item.rank + '</span>' +
+          '<span class="rank-title">' + (item.title || '') + '</span>' +
+          '<span class="rank-heat">' + (item.heat || '') + '</span>' +
+          '<span class="' + tagClass + '">' + (item.tag || '') + '</span>' +
+        '</li>';
+      });
+      listEl.innerHTML = html;
+    })
+    .catch(function(e){ console.error('Hot rank load failed', e); listEl.innerHTML = '<li class="rank-item" style="justify-content:center;color:#999;font-size:12px;">加载失败</li>'; });
+}
+loadHotRank();
+
+// 点击跳转小红书搜索
+function jumpToXhs(el) {
+  var url = el.getAttribute('data-url');
+  if (url) {
+    window.open(url, '_blank');
+  }
+}
+
+// 加载小红书每日话题推荐
+function loadTopics() {
+  var listEl = document.getElementById('topic-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<li class="topic-item"><span class="topic-rank">...</span><span class="topic-title">加载中...</span></li>';
+  
+  fetch('/api/xhs-topics')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.topics || d.topics.length === 0) {
+        listEl.innerHTML = '<li class="topic-item"><span class="topic-title" style="color:#999;">暂无推荐话题</span></li>';
+        return;
+      }
+      var html = '';
+      d.topics.forEach(function(t, idx){
+        var rankClass = idx < 3 ? 'topic-rank hot' : 'topic-rank';
+        var heatStr = t.heat ? (t.heat >= 10000 ? (t.heat/10000).toFixed(1)+'w' : t.heat.toLocaleString()) : '';
+        html += '<li class="topic-item" title="' + (t.reason || '') + '">' +
+          '<span class="' + rankClass + '">' + t.id + '</span>' +
+          '<span class="topic-title">' + (t.title || '') + '</span>' +
+          '<span class="topic-tag-small">' + (t.category || '') + '</span>' +
+          '<span class="topic-heat">' + heatStr + '</span>' +
+        '</li>';
+      });
+      listEl.innerHTML = html;
+      var updatedEl = document.getElementById('topic-updated');
+      if (updatedEl && d.last_updated) updatedEl.textContent = '更新时间：' + d.last_updated;
+    })
+    .catch(function(e){ console.error('Topics load failed', e); listEl.innerHTML = '<li class="topic-item"><span class="topic-title" style="color:#999;">加载失败</span></li>'; });
+}
+loadTopics();
+loadTodos();
+loadWorkset();
+
+// 从localStorage加载待办
+function loadTodos() {
+  var list = document.getElementById('todo-list');
+  if (!list) return;
+  var saved = localStorage.getItem('meituan_todos');
+  if (saved) {
+    var todos = JSON.parse(saved);
+    list.innerHTML = '';
+    todos.forEach(function(t) {
+      var li = document.createElement('li');
+      li.className = 'todo-item' + (t.completed ? ' completed' : '');
+      li.innerHTML = '<span class="todo-check' + (t.completed ? ' checked' : '') + '" onclick="toggleTodo(this)">&#10003;</span><span class="todo-text">' + escapeHtml(t.text) + '</span>';
+      list.appendChild(li);
+    });
+  }
+}
+function saveTodos() {
+  var list = document.getElementById('todo-list');
+  if (!list) return;
+  var items = list.querySelectorAll('.todo-item');
+  var todos = [];
+  items.forEach(function(item) {
+    todos.push({
+      text: item.querySelector('.todo-text').textContent,
+      completed: item.classList.contains('completed')
+    });
+  });
+  localStorage.setItem('meituan_todos', JSON.stringify(todos));
+}
+
+// ============ 我的待办 ============
+function showTodoInput() {
+  var area = document.getElementById('todo-input-area');
+  if (area) { area.style.display = 'flex'; document.getElementById('todo-input-text').focus(); }
+}
+function hideTodoInput() {
+  var area = document.getElementById('todo-input-area');
+  var input = document.getElementById('todo-input-text');
+  if (area) area.style.display = 'none';
+  if (input) input.value = '';
+}
+function submitTodo() {
+  var input = document.getElementById('todo-input-text');
+  var text = input ? input.value.trim() : '';
+  if (!text) return;
+  var list = document.getElementById('todo-list');
+  if (!list) return;
+  // 移除空占位
+  var placeholder = list.querySelector('.todo-placeholder');
+  if (placeholder) placeholder.remove();
+  var li = document.createElement('li');
+  li.className = 'todo-item';
+  li.innerHTML = '<span class="todo-check" onclick="toggleTodo(this)">&#10003;</span><span class="todo-text">' + text + '</span>';
+  list.appendChild(li);
+  input.value = '';
+  hideTodoInput();
+  saveTodos();
+}
+function toggleTodo(el) {
+  var item = el.closest('.todo-item');
+  if (!item) return;
+  item.classList.toggle('completed');
+  el.classList.toggle('checked');
+  saveTodos();
+}
+
+// 刷新话题（手动触发）
+function refreshTopics() {
+  var btn = document.getElementById('topic-refresh-btn');
+  if (btn) btn.style.opacity = '0.5';
+  fetch('/api/xhs-topics/update', {method: 'POST'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      alert(d.msg || '更新已启动');
+      setTimeout(function(){ loadTopics(); if (btn) btn.style.opacity = '1'; }, 8000);
+    })
+    .catch(function(e){ console.error('Topics refresh failed', e); if (btn) btn.style.opacity = '1'; });
+}
+
+// 展示昨日数据
+function showYesterdayData() {
+  var yesterday = [
+    {rank:1, title:'骑手暴雨送餐神操作', heat:'15.2w', tag:'热梗'},
+    {rank:2, title:'新手骑手避坑指南', heat:'11.8w', tag:'热点'},
+    {rank:3, title:'骑手专属防暑三件套', heat:'9.5w', tag:'热点'},
+    {rank:4, title:'"外卖到了"名场面合集', heat:'8.7w', tag:'热梗'},
+    {rank:5, title:'跑单节奏感BGM推荐', heat:'7.9w', tag:'BGM'},
+    {rank:6, title:'骑手手机支架测评', heat:'6.8w', tag:'热点'},
+    {rank:7, title:'夜间跑单照明装备', heat:'5.6w', tag:'热点'},
+    {rank:8, title:'骑手搞笑对话实录', heat:'4.9w', tag:'热梗'},
+    {rank:9, title:'夏日送单清凉神器', heat:'4.2w', tag:'热点'},
+    {rank:10, title:'骑手解压歌单分享', heat:'3.5w', tag:'BGM'}
+  ];
+  var html = '<div style="font-size:13px;line-height:1.8;padding:10px 0;">';
+  html += '<div style="font-weight:700;margin-bottom:8px;font-size:14px;">📊 昨日 Top10 热点榜单</div>';
+  yesterday.forEach(function(item){
+    var tagColor = item.tag==='热梗' ? '#ff4d4f' : (item.tag==='BGM' ? '#faad14' : '#52c41a');
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+    html += '<span style="width:18px;text-align:center;font-weight:700;color:' + (item.rank<=3 ? '#ff4d4f' : '#999') + '">' + item.rank + '</span>';
+    html += '<span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + item.title + '</span>';
+    html += '<span style="color:#999;font-size:11px;">' + item.heat + '</span>';
+    html += '<span style="font-size:10px;padding:1px 5px;border-radius:3px;color:#fff;background:' + tagColor + '">' + item.tag + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  // 使用一个兼容的模态框展示
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = '<div style="background:#fff;border-radius:8px;padding:16px;width:420px;max-width:90%;max-height:80%;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.2);">' + html + '<div style="text-align:center;margin-top:12px;"><button onclick="this.closest(\'.card-modal\').parentElement.remove()" style="border:none;background:#f5f5f5;padding:6px 20px;border-radius:4px;cursor:pointer;font-size:12px;">关闭</button></div></div>';
+  modal.className = 'card-modal';
+  modal.onclick = function(e){ if(e.target === modal) modal.remove(); };
+  document.body.appendChild(modal);
+}
+</script>
+
+</body>
+</html>

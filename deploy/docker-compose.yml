@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  meigen-proxy:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: meigen-proxy
+    ports:
+      - "8081:8081"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount the meigen scripts from host
+      - ~/.catpaw/skills/skills-market/meigen-designer/scripts:/app/meigen-scripts:ro
+      # Persist generated images
+      - ./generated-images:/app/web/static/images/generated
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
