@@ -1,157 +1,160 @@
 # 美团装备研究所 · 内容运营中心 - 部署指南
 
-## 概述
+## 快速部署（推荐：Render + GitHub Pages）
 
-本项目包含两部分：
-1. **前端页面**（GitHub Pages 永久托管）
-2. **后端代理服务**（需要持续运行的服务器）
+这个方案完全免费，不需要维护服务器，部署一次后得到一个永久链接。
+
+### 架构
+
+```
+用户浏览器
+    ↓ HTTPS
+GitHub Pages (前端静态页面)
+    ↓ API 请求 (CORS)
+Render (后端代理服务)
+    ↓ 美境 CLI
+美境 AI 生成图片
+    ↓ 返回图片 URL
+用户看到图片
+```
 
 ---
 
-## 一、前端部署（GitHub Pages - 永久免费）
+## 第一步：创建 GitHub 仓库
 
-### 1. 创建 GitHub 仓库
+### 1.1 注册 GitHub（如果还没有账号）
+
+打开 https://github.com/signup，用邮箱注册。
+
+### 1.2 创建新仓库
 
 1. 打开 https://github.com/new
-2. 仓库名称：`meituan-equipment-research`
-3. 设置为 **Public**（GitHub Pages 免费版需要公开仓库）
-4. 点击 **Create repository**
+2. 仓库名称：`meituan-equipment-research`（可以改）
+3. 选择 **Public**（免费版需要公开仓库）
+4. 不要勾选 "Add a README file"（我们已经有了）
+5. 点击 **Create repository**
 
-### 2. 推送代码到 GitHub
+### 1.3 推送本地代码到 GitHub
 
-在本地项目根目录执行：
+在你的电脑上打开 PowerShell，执行以下命令：
 
-```bash
-# 初始化 Git 仓库
-git init
-
-# 添加所有文件
-git add .
-
-# 提交
-git commit -m "Initial commit"
+```powershell
+# 进入项目目录
+cd M:\social-media-marketing-auto
 
 # 关联远程仓库（替换为你的用户名）
 git remote add origin https://github.com/你的用户名/meituan-equipment-research.git
 
-# 推送
+# 推送代码
+git branch -M main
 git push -u origin main
 ```
 
-如果没有安装 Git，先下载安装：https://git-scm.com/downloads
+输入你的 GitHub 用户名和密码（或 token）。
 
-### 3. 启用 GitHub Pages
+---
 
-1. 打开仓库页面 → **Settings** → **Pages**
+## 第二步：部署前端到 GitHub Pages（永久免费）
+
+### 2.1 启用 GitHub Pages
+
+1. 打开你的仓库页面 → **Settings** → **Pages**（左侧菜单）
 2. **Source** 选择 **GitHub Actions**
-3. 首次推送后，GitHub Actions 会自动部署
-4. 等待几分钟后，访问 `https://你的用户名.github.io/meituan-equipment-research/`
+3. 等待 1-2 分钟，GitHub Actions 会自动部署
+4. 访问 `https://你的用户名.github.io/meituan-equipment-research/`
+
+### 2.2 验证前端部署
+
+打开上面的链接，确认页面能正常显示。
 
 ---
 
-## 二、后端部署（美境代理服务）
+## 第三步：部署后端到 Render（永久免费，但会休眠）
 
-后端需要一台**持续运行的服务器**（VPS / 云服务器 / 内部服务器）。
+### 3.1 注册 Render
 
-### 方案 A：Docker 部署（推荐）
+1. 打开 https://render.com
+2. 用 GitHub 账号登录（推荐，方便导入仓库）
 
-**前提**：服务器已安装 Docker 和 Docker Compose
+### 3.2 创建 Web Service
 
-```bash
-# 1. 克隆项目到服务器
-git clone https://github.com/你的用户名/meituan-equipment-research.git
-cd meituan-equipment-research
+1. 登录后点击 **New +** → **Web Service**
+2. 选择你的 GitHub 仓库 `meituan-equipment-research`
+3. 配置：
+   - **Name**: `meituan-equipment-proxy`（可以改）
+   - **Environment**: `Python 3`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `python standalone/proxy_server.py`
+4. 选择 **Free** 计划（免费，但会休眠）
+5. 点击 **Create Web Service**
 
-# 2. 确保 meigen 脚本在服务器上可用
-# 需要将 ~/.catpaw/skills/skills-market/meigen-designer/scripts 目录复制到服务器
-# 或者修改 docker-compose.yml 中的挂载路径
+### 3.3 等待部署完成
 
-# 3. 启动服务
-cd deploy
-docker-compose up -d
+Render 会自动构建和部署，大约需要 2-3 分钟。
 
-# 4. 查看日志
-docker-compose logs -f
+部署完成后，你会得到一个链接，如：
+`https://meituan-equipment-proxy.onrender.com`
+
+### 3.4 验证后端部署
+
+访问 `https://你的-render-链接/health`，确认返回：
+```json
+{"status": "ok", "meigen_ready": true}
 ```
-
-### 方案 B：直接 Python 运行
-
-```bash
-# 1. 安装依赖
-pip install -r requirements.txt
-
-# 2. 确保 meigen CLI 已安装并认证
-meigen status --json
-
-# 3. 启动代理服务
-python standalone/proxy_server.py
-```
-
-### 方案 C：美团内部服务器部署
-
-如果美团内部有服务器资源：
-1. 联系运维申请一台服务器（建议 2核4G 以上）
-2. 将代码部署到服务器
-3. 申请一个内部域名（如 `equipment-research.sankuai.com`）
-4. 配置 Nginx 反向代理到 8081 端口
 
 ---
 
-## 三、配置前端指向后端
+## 第四步：配置前端指向后端
 
-部署完成后，需要告诉前端页面后端地址在哪里。
+### 4.1 在浏览器中设置后端地址
 
-### 方法 1：浏览器控制台设置（临时，适合测试）
-
-1. 打开部署后的前端页面
+1. 打开 GitHub Pages 链接：`https://你的用户名.github.io/meituan-equipment-research/`
 2. 按 F12 打开开发者工具 → Console
-3. 输入：
-   ```javascript
-   localStorage.setItem('API_BASE_URL', 'https://你的后端地址.com');
-   ```
+3. 输入以下命令（替换为你的 Render 链接）：
+
+```javascript
+localStorage.setItem('API_BASE_URL', 'https://你的-render-链接');
+```
+
 4. 刷新页面
 
-### 方法 2：修改代码（永久生效）
+### 4.2 永久修改（可选）
 
-编辑 `standalone/index.html`，找到：
+如果你不想每次都在控制台设置，可以修改 `standalone/index.html`：
+
+找到这一行：
 ```javascript
 var API_BASE_URL = localStorage.getItem('API_BASE_URL') || 'http://localhost:8081';
 ```
 
 改为：
 ```javascript
-var API_BASE_URL = localStorage.getItem('API_BASE_URL') || 'https://你的后端地址.com';
+var API_BASE_URL = localStorage.getItem('API_BASE_URL') || 'https://你的-render-链接';
 ```
 
-然后提交并推送代码。
+然后提交并推送：
+```bash
+git add standalone/index.html
+git commit -m "更新后端地址"
+git push
+```
+
+GitHub Actions 会自动重新部署前端。
 
 ---
 
-## 四、完整部署架构
+## 第五步：测试完整功能
 
-```
-用户浏览器
-    ↓
-GitHub Pages (https://你的用户名.github.io/meituan-equipment-research/)
-    ↓ API 请求 (CORS)
-你的后端服务器 (https://你的后端地址.com)
-    ↓
-美境 AI 服务 (meituan.net)
-    ↓
-生成图片 URL
-    ↓
-用户看到图片
-```
+1. 打开 GitHub Pages 链接
+2. 在 **物料素材制作** 区域输入描述，点击 **生成素材**
+3. 等待 30-90 秒，确认图片能正常生成和展示
 
 ---
 
-## 五、常见问题
+## 常见问题
 
-### Q1：为什么前端能打开但生成功能用不了？
-**A**：后端代理服务没有启动或没有正确配置。检查：
-1. 后端服务器是否运行 `proxy_server.py`
-2. 前端 `API_BASE_URL` 是否指向正确的后端地址
-3. 后端服务器是否安装了 `meigen` CLI 并已完成认证
+### Q1：Render 链接打不开？
+**A**：Render 免费版会在 15 分钟无活动后休眠。首次访问需要 30-60 秒唤醒。等待一下即可。
 
 ### Q2：GitHub Pages 链接打不开？
 **A**：
@@ -159,27 +162,37 @@ GitHub Pages (https://你的用户名.github.io/meituan-equipment-research/)
 2. 在 Settings → Pages 中确认 Source 是 **GitHub Actions**
 3. 首次部署可能需要 1-2 分钟，请等待
 
-### Q3：meigen 认证在服务器上怎么做？
-**A**：在服务器上运行 `meigen login` 或 `meigen status --json` 确认 token 有效。如果服务器没有浏览器，可以先在本机登录，然后把 token 文件复制到服务器。
-
-### Q4：没有服务器怎么办？
+### Q3：生成图片时报错？
 **A**：
-1. 短期使用：用 `ngrok` 把本地 8081 暴露到公网（免费但 URL 会变化）
-2. 长期使用：申请一台云服务器（阿里云/腾讯云/华为云，约 50-100元/月）
-3. 或者联系公司 IT 申请内部服务器资源
+1. 检查 Render 后端是否正常运行（访问 `/health`）
+2. 检查前端 `API_BASE_URL` 是否指向正确的 Render 地址
+3. 检查 Render 日志（Render 控制台 → Logs）
+
+### Q4：美境认证在 Render 上怎么做？
+**A**：在 Render 的 Environment 中设置环境变量：
+1. 打开 Render 控制台 → 你的服务 → Environment
+2. 添加环境变量（如果美境需要的话）
+3. 或者直接在 Render 的 Shell 中运行 `meigen login`
+
+### Q5：不想用 Render，有其他选择吗？
+**A**：
+- **Vercel**：支持纯前端部署，但 Python 后端有限制
+- **Railway**：类似 Render，支持完整 Python
+- **Fly.io**：支持 Docker，需要配置
+- **自托管**：在自己的服务器上运行
 
 ---
 
-## 六、安全注意事项
+## 安全注意事项
 
-1. **不要** 将 meigen 的认证 token 提交到 GitHub 仓库
-2. 后端服务器建议配置 HTTPS（使用 Let's Encrypt 免费证书）
-3. 如果后端部署在公网，建议添加访问控制（IP 白名单或 Basic Auth）
+1. **不要** 将美境的认证 token 提交到 GitHub 仓库
+2. Render 后端建议配置 HTTPS（Render 默认已启用）
+3. 如果后端部署在公网，建议添加访问控制
 
 ---
 
-## 七、维护
+## 维护
 
 - 更新前端内容：修改 `standalone/index.html` 后 `git push`，GitHub Actions 自动部署
-- 更新后端代码：修改代码后重新部署 Docker 容器或重启 Python 进程
-- 监控后端状态：访问 `https://你的后端地址.com/health` 查看健康状态
+- 更新后端代码：修改代码后 `git push`，Render 自动重新部署
+- 监控后端状态：访问 `https://你的-render-链接/health`
