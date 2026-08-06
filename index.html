@@ -2713,6 +2713,12 @@ var _detectedApiBase = (function() {
 var API_BASE_URL = _detectedApiBase;
 console.log('[API] 后端地址:', API_BASE_URL);
 
+// 检测是否在 GitHub Pages 上运行（无后端模式）
+var _isGithubPages = window.location.hostname.indexOf('github.io') !== -1;
+if (_isGithubPages) {
+  console.log('[API] GitHub Pages 模式，使用本地数据');
+}
+
 // Mock fetch for standalone mode
 var _originalFetch = window.fetch;
 window.fetch = function(url, options) {
@@ -2729,6 +2735,28 @@ window.fetch = function(url, options) {
       if (pathname.startsWith(proxyPaths[i])) { shouldProxy = true; break; }
     }
     if (shouldProxy) {
+      // GitHub Pages 模式：直接返回 MOCK_DATA
+      if (_isGithubPages) {
+        return new Promise(function(resolve) {
+          if (pathname === '/api/xhs-topics') {
+            resolve({ ok: true, status: 200, json: function() { return Promise.resolve(MOCK_DATA.xhsTopics); } });
+          } else if (pathname === '/api/xhs-rank') {
+            resolve({ ok: true, status: 200, json: function() { return Promise.resolve(MOCK_DATA.xhsRank); } });
+          } else if (pathname === '/api/xhs-profile') {
+            resolve({ ok: true, status: 200, json: function() { return Promise.resolve(MOCK_DATA.xhsProfile); } });
+          } else if (pathname === '/api/xhs-trend') {
+            resolve({ ok: true, status: 200, json: function() { return Promise.resolve(MOCK_DATA.xhsTrend); } });
+          } else if (pathname === '/api/llm-topics') {
+            resolve({ ok: true, status: 200, json: function() { return Promise.resolve({topics: []}); } });
+          } else if (pathname === '/api/llm-titles') {
+            resolve({ ok: true, status: 200, json: function() { return Promise.resolve({titles: []}); } });
+          } else if (pathname === '/api/llm-body') {
+            resolve({ ok: true, status: 200, json: function() { return Promise.resolve({body: ''}); } });
+          } else {
+            resolve({ ok: true, status: 200, json: function() { return Promise.resolve({status: 'error', error: 'GitHub Pages 模式不支持此功能'}); } });
+          }
+        });
+      }
       return _originalFetch.call(this, API_BASE_URL + pathname, options)
         .catch(function(e) {
           // 代理未启动，回退到mock数据（仅对查询类API）
