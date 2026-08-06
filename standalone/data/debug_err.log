@@ -1,0 +1,9 @@
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8081
+ * Running on http://11.0.126.81:8081
+Press CTRL+C to quit
+[DEBUG] _call_llm called with key: sk-e606e..., base_url: https://api.deepseek.com
+127.0.0.1 - - [03/Aug/2026 14:10:06] "GET /api/llm-test HTTP/1.1" 200 -
+[DEBUG] _call_llm called with key: sk-e606e..., base_url: https://api.deepseek.com
+127.0.0.1 - - [03/Aug/2026 14:12:15] "POST /api/llm-titles HTTP/1.1" 200 -

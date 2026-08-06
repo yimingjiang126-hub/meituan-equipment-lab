@@ -1,0 +1,36 @@
+============================================================
+美团装备研究所 - 代理服务器 + LLM 引擎
+============================================================
+美境脚本目录: C:\Users\姜一鸣\.catpaw\skills\skills-market\meigen-designer\scripts
+美境脚本就绪: True
+LLM 引擎: OpenAI
+  模型: deepseek-chat
+  Base URL: https://api.deepseek.com
+------------------------------------------------------------
+API 端点:
+  POST  http://localhost:8081/api/generate-material     (美境物料)
+  GET   http://localhost:8081/api/xhs-topics            (话题推荐数据)
+  GET   http://localhost:8081/api/xhs-rank              (热点榜单数据)
+  GET   http://localhost:8081/api/xhs-profile           (账号概览数据)
+  GET   http://localhost:8081/api/xhs-trend             (互动量趋势数据)
+  POST  http://localhost:8081/api/xhs-topics/refresh    (手动刷新话题)
+  POST  http://localhost:8081/api/xhs-rank/refresh      (手动刷新榜单)
+  POST  http://localhost:8081/api/xhs-profile/refresh   (手动刷新账号数据)
+  POST  http://localhost:8081/api/xhs-trend/refresh     (手动刷新趋势数据)
+  POST  http://localhost:8081/api/llm-topics            (LLM 话题推荐)
+  POST  http://localhost:8081/api/llm-titles            (LLM 标题生成)
+  POST  http://localhost:8081/api/llm-body              (LLM 正文生成)
+  GET   http://localhost:8081/api/llm-test              (LLM 连接测试)
+  GET   http://localhost:8081/api/status                (服务状态)
+  GET   http://localhost:8081/health
+============================================================
+数据文件:
+  话题数据: M:\social-media-marketing-auto\standalone\data\xhs_topics.json
+  榜单数据: M:\social-media-marketing-auto\standalone\data\xhs_rank.json
+  账号数据: M:\social-media-marketing-auto\standalone\data\xhs_profile.json
+  趋势数据: M:\social-media-marketing-auto\standalone\data\xhs_trend.json
+============================================================
+[定时任务] 下次数据刷新时间: 2026-08-04 10:00:00，等待19.8小时
+[定时任务] 已启动每天10:00自动刷新任务
+ * Serving Flask app 'proxy_server'
+ * Debug mode: off
