@@ -2979,6 +2979,9 @@ function autoGenDesc() {
   document.getElementById('mat-desc').value = parts.join('');
 }
 
+// 存储当前生成的描述（用于历史记录）
+var currentGenPrompt = '';
+
 function generateMaterial() {
   var desc = document.getElementById('mat-desc').value.trim();
   
@@ -2987,6 +2990,9 @@ function generateMaterial() {
     desc = document.getElementById('mat-desc').value.trim();
     if (!desc) { alert('请先填写素材信息并生成描述'); return; }
   }
+  
+  // 保存当前描述到全局变量（用于历史记录）
+  currentGenPrompt = desc;
   
   // Reset preview
   var img = document.getElementById('material-result-img');
@@ -3062,7 +3068,7 @@ function pollMaterialStatus(taskId) {
           // 保存到历史记录
           saveToHistory({
             url: status.url,
-            prompt: document.getElementById('mat-desc') ? document.getElementById('mat-desc').value : '',
+            prompt: currentGenPrompt || '',
             timestamp: new Date().toISOString(),
             width: status.width || '1080',
             height: status.height || '1920'
