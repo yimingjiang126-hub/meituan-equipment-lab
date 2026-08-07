@@ -3224,11 +3224,18 @@ function showHistoryPanel() {
 // 复用历史描述
 function reusePrompt(idx) {
   var history = getHistory();
-  if (history[idx] && history[idx].prompt) {
+  console.log('[Reuse] 点击复用，索引:', idx, '历史记录:', history[idx]);
+  if (history[idx]) {
     var promptEl = document.getElementById('mat-desc');
-    if (promptEl) {
+    console.log('[Reuse] 描述元素:', promptEl, '描述内容:', history[idx].prompt);
+    if (promptEl && history[idx].prompt) {
       promptEl.value = history[idx].prompt;
       document.getElementById('history-panel').style.display = 'none';
+      console.log('[Reuse] 已复用描述');
+    } else if (!promptEl) {
+      console.error('[Reuse] 未找到 mat-desc 元素');
+    } else {
+      console.warn('[Reuse] 描述为空');
     }
   }
 }
