@@ -3062,7 +3062,7 @@ function pollMaterialStatus(taskId) {
           // 保存到历史记录
           saveToHistory({
             url: status.url,
-            prompt: document.getElementById('material-prompt') ? document.getElementById('material-prompt').value : '',
+            prompt: document.getElementById('mat-desc') ? document.getElementById('mat-desc').value : '',
             timestamp: new Date().toISOString(),
             width: status.width || '1080',
             height: status.height || '1920'
@@ -3225,7 +3225,7 @@ function showHistoryPanel() {
 function reusePrompt(idx) {
   var history = getHistory();
   if (history[idx] && history[idx].prompt) {
-    var promptEl = document.getElementById('material-prompt');
+    var promptEl = document.getElementById('mat-desc');
     if (promptEl) {
       promptEl.value = history[idx].prompt;
       document.getElementById('history-panel').style.display = 'none';
