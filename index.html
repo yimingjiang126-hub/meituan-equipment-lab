@@ -346,7 +346,10 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hi
     <div class="card" style="grid-column:2; grid-row:3 / span 3;">
       <div class="card-header">
         <div class="card-title"><i class="fas fa-palette" style="color:#eb2f96;"></i> 物料素材制作</div>
-        <button class="btn btn-primary" style="padding:4px 10px;font-size:11px;" onclick="generateMaterial()"><i class="fas fa-wand-magic-sparkles"></i> 生成素材</button>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-primary" style="padding:4px 10px;font-size:11px;" onclick="generateMaterial()"><i class="fas fa-wand-magic-sparkles"></i> 生成素材</button>
+          <button class="btn" style="padding:4px 10px;font-size:11px;background:#f0f0f0;" onclick="showHistoryPanel()"><i class="fas fa-history"></i> 历史记录</button>
+        </div>
       </div>
       <div class="card-body" style="padding:8px 10px; display:flex; flex-direction:column; gap:5px;">
         <!-- 上方：素材信息填写 -->
@@ -3055,6 +3058,15 @@ function pollMaterialStatus(taskId) {
           var btn = document.getElementById('material-download-btn');
           if (img) { img.src = status.url; img.style.display = 'block'; }
           if (btn) { btn.setAttribute('data-url', status.url); btn.style.display = 'inline-flex'; }
+          
+          // 保存到历史记录
+          saveToHistory({
+            url: status.url,
+            prompt: document.getElementById('material-prompt') ? document.getElementById('material-prompt').value : '',
+            timestamp: new Date().toISOString(),
+            width: status.width || '1080',
+            height: status.height || '1920'
+          });
         } else if (status.status === 'failed') {
           if (loading) loading.style.display = 'none';
           var placeholder = document.getElementById('mat-placeholder');
@@ -3137,6 +3149,88 @@ function fallbackDownload(url) {
       console.error('Download failed', e);
       window.open(url, '_blank');
     });
+}
+
+// ========== 历史记录功能 ==========
+
+// 保存到历史记录
+function saveToHistory(item) {
+  try {
+    var history = JSON.parse(localStorage.getItem('meigen_history') || '[]');
+    history.unshift(item);
+    if (history.length > 20) history = history.slice(0, 20);
+    localStorage.setItem('meigen_history', JSON.stringify(history));
+    console.log('[History] 已保存到历史记录，当前共', history.length, '条');
+  } catch(e) {
+    console.error('[History] 保存失败:', e);
+  }
+}
+
+// 获取历史记录
+function getHistory() {
+  try {
+    return JSON.parse(localStorage.getItem('meigen_history') || '[]');
+  } catch(e) {
+    return [];
+  }
+}
+
+// 显示历史记录面板
+function showHistoryPanel() {
+  var history = getHistory();
+  
+  var panel = document.getElementById('history-panel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'history-panel';
+    panel.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;';
+    document.body.appendChild(panel);
+  }
+  
+  panel.style.display = 'flex';
+  
+  var html = '<div style="background:#fff;border-radius:12px;padding:24px;max-width:90%;max-height:90%;overflow:auto;width:800px;">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
+  html += '<h3 style="margin:0;">历史生成记录 (' + history.length + ' 条)</h3>';
+  html += '<button onclick="document.getElementById(\'history-panel\').style.display=\'none\'" style="background:#ff4d4f;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">关闭</button>';
+  html += '</div>';
+  
+  if (history.length === 0) {
+    html += '<p style="text-align:center;color:#999;padding:40px;">暂无历史记录</p>';
+  } else {
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">';
+    history.forEach(function(item, idx) {
+      var date = new Date(item.timestamp);
+      var dateStr = (date.getMonth()+1) + '/' + date.getDate() + ' ' + date.getHours() + ':' + String(date.getMinutes()).padStart(2,'0');
+      html += '<div style="border:1px solid #eee;border-radius:8px;overflow:hidden;">';
+      html += '<img src="' + item.url + '" style="width:100%;height:150px;object-fit:cover;" loading="lazy" />';
+      html += '<div style="padding:8px;font-size:11px;color:#666;">';
+      html += '<div style="margin-bottom:4px;">' + dateStr + ' · ' + (item.width || '1080') + 'x' + (item.height || '1920') + '</div>';
+      html += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + escapeHtml(item.prompt || '') + '">' + escapeHtml((item.prompt || '').substring(0, 30)) + '...</div>';
+      html += '<div style="margin-top:6px;display:flex;gap:6px;">';
+      html += '<a href="' + item.url + '" target="_blank" style="color:#1890ff;text-decoration:none;font-size:11px;">查看大图</a>';
+      html += '<span style="color:#ccc;">|</span>';
+      html += '<a href="javascript:void(0)" onclick="reusePrompt(' + idx + ')" style="color:#52c41a;text-decoration:none;font-size:11px;">复用描述</a>';
+      html += '</div>';
+      html += '</div></div>';
+    });
+    html += '</div>';
+  }
+  
+  html += '</div>';
+  panel.innerHTML = html;
+}
+
+// 复用历史描述
+function reusePrompt(idx) {
+  var history = getHistory();
+  if (history[idx] && history[idx].prompt) {
+    var promptEl = document.getElementById('material-prompt');
+    if (promptEl) {
+      promptEl.value = history[idx].prompt;
+      document.getElementById('history-panel').style.display = 'none';
+    }
+  }
 }
 
 // ===== AI 内容生成 =====
