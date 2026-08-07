@@ -3223,20 +3223,30 @@ function showHistoryPanel() {
 
 // 复用历史描述
 function reusePrompt(idx) {
-  var history = getHistory();
-  console.log('[Reuse] 点击复用，索引:', idx, '历史记录:', history[idx]);
-  if (history[idx]) {
-    var promptEl = document.getElementById('mat-desc');
-    console.log('[Reuse] 描述元素:', promptEl, '描述内容:', history[idx].prompt);
-    if (promptEl && history[idx].prompt) {
-      promptEl.value = history[idx].prompt;
-      document.getElementById('history-panel').style.display = 'none';
-      console.log('[Reuse] 已复用描述');
-    } else if (!promptEl) {
-      console.error('[Reuse] 未找到 mat-desc 元素');
-    } else {
-      console.warn('[Reuse] 描述为空');
+  try {
+    var history = getHistory();
+    console.log('[Reuse] 点击复用，索引:', idx, '历史记录长度:', history.length);
+    if (history[idx]) {
+      var promptEl = document.getElementById('mat-desc');
+      console.log('[Reuse] 描述元素:', promptEl, '描述内容:', history[idx].prompt);
+      if (promptEl) {
+        if (history[idx].prompt) {
+          promptEl.value = history[idx].prompt;
+          promptEl.focus();
+          console.log('[Reuse] 已复用描述:', history[idx].prompt.substring(0, 50));
+        } else {
+          alert('该记录没有保存描述');
+        }
+        var panel = document.getElementById('history-panel');
+        if (panel) panel.style.display = 'none';
+      } else {
+        console.error('[Reuse] 未找到 mat-desc 元素');
+        alert('未找到描述输入框');
+      }
     }
+  } catch(e) {
+    console.error('[Reuse] 错误:', e);
+    alert('复用失败: ' + e.message);
   }
 }
 
